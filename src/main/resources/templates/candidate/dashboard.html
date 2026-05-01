@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Candidate Dashboard')}"></head>
+<body>
+    <nav th:replace="~{layout :: navbar}"></nav>
+
+    <div class="container animate-fade-in">
+        <h2 class="mb-4">Candidate Dashboard</h2>
+
+        <div th:if="${param.applied}" class="mb-4 p-4 glass-panel text-center" style="color: var(--secondary);">
+            Your candidacy application has been submitted successfully!
+        </div>
+
+        <div th:if="${profile == null}" class="glass-panel">
+            <h3 class="mb-4">Register Candidacy</h3>
+            <p class="text-muted mb-4">Submit your details to run for the election. Admin approval is required.</p>
+            
+            <form th:action="@{/candidate/apply}" method="post">
+                <div class="form-group">
+                    <label for="party">Political Party</label>
+                    <input type="text" id="party" name="party" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="constituency">Constituency / Region</label>
+                    <input type="text" id="constituency" name="constituency" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="manifesto">Manifesto (Short Pitch)</label>
+                    <textarea id="manifesto" name="manifesto" class="form-control" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Application</button>
+            </form>
+        </div>
+
+        <div th:if="${profile != null}" class="glass-panel">
+            <h3 class="mb-4">Your Candidacy Status</h3>
+            <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                <div>
+                    <p class="text-muted">Party</p>
+                    <p th:text="${profile.party}" style="font-weight: 600; font-size: 1.2rem;"></p>
+                </div>
+                <div>
+                    <p class="text-muted">Constituency</p>
+                    <p th:text="${profile.constituency}" style="font-weight: 600; font-size: 1.2rem;"></p>
+                </div>
+                <div>
+                    <p class="text-muted">Status</p>
+                    <span th:text="${profile.status}" th:class="'badge badge-' + ${profile.status}"></span>
+                </div>
+            </div>
+            
+            <div th:if="${profile.status.name() == 'APPROVED'}">
+                <p class="text-muted">You can now engage with voters on the <a th:href="@{/forums}" style="color: var(--primary);">Forums</a>.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

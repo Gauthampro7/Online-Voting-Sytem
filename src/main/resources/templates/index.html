@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Home')}"></head>
+<body>
+    <nav th:replace="~{layout :: navbar}"></nav>
+
+    <div class="container animate-fade-in">
+        <div class="hero">
+            <h1>Secure. Transparent. Democratic.</h1>
+            <p>Welcome to the Online National Polling System. Register for your digital voter card, explore candidates, and cast your vote from the comfort of your home.</p>
+            <div class="mt-4">
+                <a th:href="@{/register}" class="btn btn-primary" style="margin-right: 1rem;">Get Started</a>
+                <a th:href="@{/forums}" class="btn glass-panel" style="padding: 0.75rem 1.5rem;">Join Discussion</a>
+            </div>
+        </div>
+
+        <div class="grid mt-4">
+            <div class="glass-panel text-center">
+                <h3 class="mb-2">For Voters</h3>
+                <p class="text-muted">Apply for your voter ID, verify your identity, and cast your vote securely.</p>
+            </div>
+            <div class="glass-panel text-center">
+                <h3 class="mb-2">For Candidates</h3>
+                <p class="text-muted">Register your candidacy, publish your manifesto, and engage with voters.</p>
+            </div>
+            <div class="glass-panel text-center">
+                <h3 class="mb-2">Live Results</h3>
+                <p class="text-muted">Watch the election results unfold in real-time with total transparency.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

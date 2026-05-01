@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Voting System - Project Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --bg-card: rgba(25, 30, 40, 0.7);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #10b981;
+            --accent-warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.7;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+                              radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.15), transparent 25%);
+            background-attachment: fixed;
+        }
+
+        /* Layout */
+        .wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            padding: 2.5rem 2rem;
+            border-right: 1px solid var(--border-glass);
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 100;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 4rem 5rem;
+            max-width: 1000px;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        h1 { font-size: 3.5rem; letter-spacing: -1px; background: linear-gradient(135deg, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: 2.2rem; margin-top: 4rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.5rem; margin-top: 2rem; color: #e2e8f0; }
+        p { margin-bottom: 1.5rem; font-size: 1.05rem; color: var(--text-muted); }
+        strong { color: #e2e8f0; }
+
+        /* Sidebar Links */
+        .sidebar-brand { font-size: 1.2rem; font-weight: 700; margin-bottom: 3rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 2px;}
+        .sidebar-nav { display: flex; flex-direction: column; gap: 1rem; }
+        .sidebar-nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding-left: 1rem;
+            border-left: 2px solid transparent;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            color: var(--accent-primary);
+            border-left: 2px solid var(--accent-primary);
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* Code Blocks */
+        pre[class*="language-"] {
+            background: #111827 !important;
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            margin: 1.5rem 0 !important;
+            padding: 1.5rem !important;
+            box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.2);
+        }
+        code[class*="language-"], pre[class*="language-"] {
+            font-family: 'Fira Code', monospace !important;
+            font-size: 0.9rem !important;
+        }
+
+        /* Badges & Accents */
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+        .badge-blue { background: rgba(59, 130, 246, 0.1); color: var(--accent-primary); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .badge-green { background: rgba(16, 185, 129, 0.1); color: var(--accent-secondary); border: 1px solid rgba(16, 185, 129, 0.2); }
+
+        /* Diagram / Visuals */
+        .diagram-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 3rem 0;
+            padding: 2rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            border: 1px dashed rgba(255,255,255,0.1);
+        }
+        .diagram-node {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .diagram-node h4 { margin-bottom: 0.5rem; font-size: 1.1rem; color: #f1f5f9; }
+        .diagram-node p { font-size: 0.85rem; margin-bottom: 0; }
+        
+        /* Step Grid */
+        .step-grid {
+            display: grid;
+            grid-template-columns: 50px 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        @media (max-width: 1024px) {
+            .wrapper { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: static; padding: 1.5rem; border-right: none; border-bottom: 1px solid var(--border-glass); }
+            .sidebar-nav { flex-direction: row; flex-wrap: wrap; }
+            .main-content { padding: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- Sticky Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">Project Docs</div>
+        <nav class="sidebar-nav">
+            <a href="#intro">1. Introduction & Overview</a>
+            <a href="#architecture">2. System Architecture</a>
+            <a href="#database">3. Database & JDBC Connect</a>
+            <a href="#backend">4. Backend (Spring Boot)</a>
+            <a href="#frontend">5. Frontend (Thymeleaf)</a>
+            <a href="#security">6. Security & Roles</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- Hero Section -->
+        <section id="intro" style="margin-bottom: 6rem; margin-top: 2rem;">
+            <span class="badge badge-blue">Final Year Project</span>
+            <h1>Online National Polling System</h1>
+            <p style="font-size: 1.25rem; max-width: 800px; margin-top: 1.5rem;">
+                A comprehensive, highly secure, and aesthetically premium Java-based web application designed to facilitate democratic online voting, candidate nomination, and real-time result tracking.
+            </p>
+        </section>
+
+        <!-- Architecture Section -->
+        <section id="architecture">
+            <h2>System Architecture</h2>
+            <p>The system is built on a robust, scalable <strong>Model-View-Controller (MVC)</strong> architecture, heavily utilizing the Spring framework ecosystem. Below is the data flow diagram detailing how a user request traverses the application layers down to the MySQL database.</p>
+            
+            <div class="diagram-container">
+                <div class="diagram-node">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🌐</div>
+                    <h4>1. Client View</h4>
+                    <p>Browser rendering HTML5 & CSS via Thymeleaf.</p>
+                </div>
+                <div style="font-size: 1.5rem; color: var(--accent-primary);">➔</div>
+                <div class="diagram-node">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">⚙️</div>
+                    <h4>2. Controllers</h4>
+                    <p>Spring MVC handling HTTP requests & routing.</p>
+                </div>
+                <div style="font-size: 1.5rem; color: var(--accent-primary);">➔</div>
+                <div class="diagram-node">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🧠</div>
+                    <h4>3. Service Layer</h4>
+                    <p>Core business logic and `@Transactional` scopes.</p>
+                </div>
+                <div style="font-size: 1.5rem; color: var(--accent-primary);">➔</div>
+                <div class="diagram-node" style="border-color: var(--accent-secondary);">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🗄️</div>
+                    <h4>4. MySQL / JDBC</h4>
+                    <p>Spring Data JPA abstracting native JDBC queries.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Database Section -->
+        <section id="database">
+            <h2>Database & JDBC Connectivity</h2>
+            <p>To persist user data, candidate profiles, and immutable voting records, we utilized a <strong>MySQL</strong> relational database. Instead of writing raw, boilerplate JDBC queries (like <code>DriverManager.getConnection()</code> and <code>PreparedStatement</code>), we leveraged <strong>Spring Data JPA and Hibernate</strong>. This acts as an Object-Relational Mapping (ORM) layer.</p>
+
+            <div class="glass-card">
+                <h3>1. application.properties Configuration</h3>
+                <p>This is the core configuration file that establishes the JDBC connection pool (HikariCP) between our Java application and the MySQL server.</p>
+<pre><code class="language-properties"># Database Configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/online_voting?useSSL=false&serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect</code></pre>
+                <p><strong>Explanation:</strong> <code>ddl-auto=update</code> is a powerful feature that automatically analyzes our Java classes and generates the SQL `CREATE TABLE` commands in MySQL for us.</p>
+            </div>
+
+            <div class="glass-card">
+                <h3>2. Entity Modeling (The 'M' in MVC)</h3>
+                <p>We mapped our database tables directly to Java Objects (POJOs) using JPA annotations. For example, the Vote table links a voter to a candidate.</p>
+<pre><code class="language-java">@Entity
+public class Vote {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne // Foreign Key to the Users table
+    @JoinColumn(name = "voter_id", nullable = false)
+    private User voter;
+
+    @ManyToOne // Foreign Key to the Users table
+    @JoinColumn(name = "candidate_id", nullable = false)
+    private User candidate;
+    
+    private LocalDateTime timestamp;
+}</code></pre>
+            </div>
+        </section>
+
+        <!-- Backend Section -->
+        <section id="backend">
+            <h2>Backend Logic (Spring Boot)</h2>
+            <p>The backend is divided into Repositories (Data Access) and Services (Business Logic).</p>
+
+            <div class="step-grid">
+                <div class="step-number">A</div>
+                <div>
+                    <h4>Repository Interface</h4>
+                    <p>By extending <code>JpaRepository</code>, we instantly inherit methods like <code>save()</code>, <code>findAll()</code>, and <code>findById()</code> without writing SQL.</p>
+<pre><code class="language-java">public interface VoteRepository extends JpaRepository&lt;Vote, Long&gt; {
+    // Spring dynamically generates a "SELECT * FROM vote WHERE voter_id = ?" query!
+    Optional&lt;Vote&gt; findByVoter(User voter);
+    long countByCandidate(User candidate);
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="step-grid">
+                <div class="step-number">B</div>
+                <div>
+                    <h4>Service Layer</h4>
+                    <p>This is where the actual logic resides. We use <code>@Transactional</code> to ensure that if something fails during a multi-step database process, the entire transaction rolls back to prevent corrupted data.</p>
+<pre><code class="language-java">@Service
+public class VotingService {
+    @Transactional
+    public boolean castVote(User voter, User candidate) {
+        if (!hasVoted(voter)) {
+            Vote vote = new Vote(voter, candidate);
+            voteRepository.save(vote); // Inserts into MySQL via JDBC
+            return true;
+        }
+        return false;
+    }
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Frontend Section -->
+        <section id="frontend">
+            <h2>Frontend Design (Thymeleaf & Glassmorphism)</h2>
+            <p>For the user interface, we avoided heavy Javascript frameworks to keep the project completely Java-centric. We used <strong>Thymeleaf</strong>, a server-side Java template engine that allows us to inject Java variables directly into HTML.</p>
+
+            <div class="glass-card">
+                <h3>Thymeleaf Integration</h3>
+                <p>We pass data from the Controller to the View using the <code>Model</code> object. Below is how we loop through the approved candidates and display them to the voter.</p>
+<pre><code class="language-html">&lt;div class="grid" th:if="${not #lists.isEmpty(candidates)}"&gt;
+    &lt;!-- Loop through candidates --&gt;
+    &lt;div th:each="candidate : ${candidates}" class="glass-panel text-center"&gt;
+        &lt;h3 th:text="${candidate.user.name}"&gt;&lt;/h3&gt;
+        &lt;p class="text-muted" th:text="${candidate.party}"&gt;&lt;/p&gt;
+        &lt;p th:text="${candidate.manifesto}"&gt;&lt;/p&gt;
+        
+        &lt;!-- Submit Vote Form --&gt;
+        &lt;form th:action="@{/voter/cast-vote}" method="post"&gt;
+            &lt;input type="hidden" name="candidateUsername" th:value="${candidate.user.username}"&gt;
+            &lt;button type="submit" class="btn btn-primary"&gt;Vote&lt;/button&gt;
+        &lt;/form&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                <h3 class="mt-4">The "Glassmorphism" Aesthetic</h3>
+                <p>To ensure a premium feel, we utilized modern Vanilla CSS with backdrop filters to create a frosted glass effect over the dark space background.</p>
+<pre><code class="language-css">.glass-panel {
+    background: rgba(255, 255, 255, 0.05); /* Semi-transparent */
+    backdrop-filter: blur(12px); /* Frosted glass effect */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}</code></pre>
+            </div>
+        </section>
+
+        <!-- Security Section -->
+        <section id="security" style="margin-bottom: 4rem;">
+            <h2>Security & Role-Based Access</h2>
+            <p>Elections require strict security. We implemented <strong>Spring Security</strong> to handle authentication, password hashing (BCrypt), and authorization.</p>
+
+            <div class="glass-card">
+                <h3>Role Hierarchy</h3>
+                <p>We defined 4 distinct roles using a Java Enum: <code>ADMIN</code>, <code>FIELD_OFFICER</code>, <code>CANDIDATE</code>, and <code>VOTER</code>. Spring Security is configured to intercept HTTP requests and block unauthorized access based on these roles.</p>
+<pre><code class="language-java">@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.authorizeHttpRequests((requests) -> requests
+            // Public routes
+            .requestMatchers("/", "/register", "/css/**").permitAll()
+            
+            // Protected routes based on Role
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/field-officer/**").hasRole("FIELD_OFFICER")
+            .requestMatchers("/voter/**").hasAnyRole("VOTER", "ADMIN")
+            
+            // Block everything else unless logged in
+            .anyRequest().authenticated()
+        )
+        .formLogin((form) -> form.loginPage("/login").defaultSuccessUrl("/dashboard", true));
+
+    return http.build();
+}</code></pre>
+                <p>This guarantees that a normal Voter cannot manually navigate to <code>/admin/results</code> or alter candidate approvals.</p>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- Syntax Highlighting Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-properties.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+
+</body>
+</html>

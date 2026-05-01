@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Manage Candidates')}"></head>
+<body>
+    <nav th:replace="~{layout :: navbar}"></nav>
+
+    <div class="container animate-fade-in">
+        <h2 class="mb-4">Pending Candidate Applications</h2>
+
+        <div th:if="${param.success}" class="mb-4 p-4 glass-panel text-center" style="color: var(--secondary);">
+            Candidate approved successfully.
+        </div>
+        <div th:if="${param.rejected}" class="mb-4 p-4 glass-panel text-center" style="color: var(--danger);">
+            Candidate rejected.
+        </div>
+
+        <div class="glass-panel">
+            <div th:if="${#lists.isEmpty(pendingCandidates)}">
+                <p class="text-muted">No pending candidate applications.</p>
+            </div>
+
+            <div class="table-container" th:if="${not #lists.isEmpty(pendingCandidates)}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Party</th>
+                            <th>Constituency</th>
+                            <th>Manifesto</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="candidate : ${pendingCandidates}">
+                            <td th:text="${candidate.user.name}"></td>
+                            <td th:text="${candidate.party}"></td>
+                            <td th:text="${candidate.constituency}"></td>
+                            <td th:text="${candidate.manifesto}"></td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <form th:action="@{/admin/candidates/approve}" method="post">
+                                        <input type="hidden" name="profileId" th:value="${candidate.id}">
+                                        <button type="submit" class="btn btn-success" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">Approve</button>
+                                    </form>
+                                    <form th:action="@{/admin/candidates/reject}" method="post">
+                                        <input type="hidden" name="profileId" th:value="${candidate.id}">
+                                        <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">Reject</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <a th:href="@{/dashboard}" class="btn glass-panel mt-4" style="display: inline-block;">Back to Dashboard</a>
+    </div>
+</body>
+</html>

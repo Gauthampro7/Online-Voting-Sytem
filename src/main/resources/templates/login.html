@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Login')}"></head>
+<body>
+    <nav th:replace="~{layout :: navbar}"></nav>
+
+    <div class="container animate-fade-in" style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
+        <div class="glass-panel" style="width: 100%; max-width: 400px;">
+            <h2 class="text-center mb-4">Welcome Back</h2>
+            
+            <div th:if="${param.error}" class="mb-4 text-center" style="color: var(--danger);">
+                Invalid username and password.
+            </div>
+            <div th:if="${param.logout}" class="mb-4 text-center" style="color: var(--secondary);">
+                You have been logged out.
+            </div>
+            <div th:if="${param.registered}" class="mb-4 text-center" style="color: var(--secondary);">
+                Registration successful! Please login.
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Login</button>
+            </form>
+            <p class="text-center mt-4 text-muted">Don't have an account? <a th:href="@{/register}" style="color: var(--primary);">Register here</a></p>
+        </div>
+    </div>
+</body>
+</html>

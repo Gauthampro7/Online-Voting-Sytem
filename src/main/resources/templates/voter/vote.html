@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Vote')}"></head>
+<body>
+    <nav th:replace="~{layout :: navbar}"></nav>
+
+    <div class="container animate-fade-in">
+        <h2 class="mb-2">Cast Your Vote</h2>
+        <p class="text-muted mb-4">Select a candidate from your constituency to vote for. This action is irreversible.</p>
+
+        <div th:if="${#lists.isEmpty(candidates)}" class="glass-panel text-center">
+            <p>No candidates have been approved for your constituency yet.</p>
+        </div>
+
+        <div class="grid" th:if="${not #lists.isEmpty(candidates)}">
+            <div th:each="candidate : ${candidates}" class="glass-panel text-center">
+                <h3 th:text="${candidate.user.name}"></h3>
+                <p class="text-muted mb-2" th:text="${candidate.party}"></p>
+                <p class="mb-4" th:text="${candidate.manifesto}"></p>
+                
+                <form th:action="@{/voter/cast-vote-username}" method="post">
+                    <input type="hidden" name="candidateUsername" th:value="${candidate.user.username}">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Vote</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

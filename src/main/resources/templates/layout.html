@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' | Online Voting System'">Online Voting System</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <nav th:fragment="navbar" class="glass-nav animate-fade-in">
+        <a th:href="@{/}" class="nav-brand">National Polling</a>
+        <div class="nav-links">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/how-it-works}">How We Built It</a>
+            <a th:href="@{/forums}">Forums</a>
+            <span sec:authorize="isAuthenticated()">
+                <a th:href="@{/dashboard}">Dashboard</a>
+                <a th:href="@{/logout}" style="color: var(--danger);">Logout (<span sec:authentication="name"></span>)</a>
+            </span>
+            <span sec:authorize="!isAuthenticated()">
+                <a th:href="@{/login}">Login</a>
+                <a th:href="@{/register}" class="btn btn-primary" style="padding: 0.5rem 1rem; margin-left: 1rem;">Register</a>
+            </span>
+        </div>
+    </nav>
+</body>
+</html>
