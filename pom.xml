@@ -16,6 +16,15 @@
 	<properties>
 		<java.version>17</java.version>
 	</properties>
+
+	<developers>
+		<developer>
+			<name>Gautham Saiju</name>
+		</developer>
+		<developer>
+			<name>Mahima Kumari</name>
+		</developer>
+	</developers>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

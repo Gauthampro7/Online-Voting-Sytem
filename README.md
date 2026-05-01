@@ -1,5 +1,7 @@
 # Online National Polling System
 
+**Developed by: Gautham Saiju & Mahima Kumari**
+
 A fully functional, aesthetic, and responsive Online Voting System developed for a college project. This system allows for end-to-end election management including voter registration, candidate nomination, live voting, and real-time result calculation.
 
 ## Tech Stack
