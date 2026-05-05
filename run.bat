@@ -1,10 +1,9 @@
 @echo off
-SET MYSQL_JAR=C:\Users\gauth\.m2\repository\com\mysql\mysql-connector-j\8.3.0\mysql-connector-j-8.3.0.jar
-SET CLASSES=target\classes
-
-echo ======================================
-echo   Online National Polling System
-echo ======================================
-echo.
-java -cp "%MYSQL_JAR%;%CLASSES%" com.dsu.onlinevoting.OnlineVotingApp
+if not exist "out\com\dsu\onlinevoting\OnlineVotingApp.class" (
+    echo Compiled files not found. Please run compile.bat first.
+    pause
+    exit /b
+)
+echo Starting Online Voting App...
+java -cp "lib\mysql-connector-j.jar;out" com.dsu.onlinevoting.OnlineVotingApp
 pause
