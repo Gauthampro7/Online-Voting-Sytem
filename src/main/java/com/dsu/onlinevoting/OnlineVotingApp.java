@@ -1,25 +1,43 @@
 package com.dsu.onlinevoting;
 
+// MessageDigest is Java's built-in library for hashing — we use it for SHA-256 password hashing
 import java.security.MessageDigest;
+// java.sql.* gives us everything for JDBC: Connection, Statement, PreparedStatement, ResultSet
 import java.sql.*;
+// Scanner reads text typed by the user in the terminal
 import java.util.Scanner;
 
 /**
  * Online National Polling System - CLI Version
- * Single-file application using raw JDBC + MySQL.
- * Run with: java -jar target/onlinevoting-1.0.jar
+ *
+ * This is a single-file Java application that connects to a MySQL database
+ * and runs as a terminal (command-line) program. No web browser needed.
+ *
+ * How to run:
+ *   1. Start MySQL (MariaDB) on port 3306
+ *   2. Run this class from Eclipse: Right-click -> Run As -> Java Application
+ *
+ * Default admin login: username=admin  password=admin123
  */
 public class OnlineVotingApp {
 
-    // ─── DATABASE CONFIG ──────────────────────────────────────────────────────
-    private static final String DB_USER    = "root";
-    private static final String DB_PASS    = "";  // Change if your root has a password
-    // Bootstrap URL (no DB specified — used only to CREATE the database on first run)
-    private static final String DB_URL_BOOT = "jdbc:mysql://localhost:3306/?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-    // Normal URL (with DB selected)
-    private static final String DB_URL      = "jdbc:mysql://localhost:3306/online_voting?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+    // ─── DATABASE CONNECTION SETTINGS ─────────────────────────────────────────
+    // These are the credentials to connect to MySQL. 'root' is the default admin user.
+    private static final String DB_USER = "root";
+    private static final String DB_PASS = "";  // Leave blank if MySQL has no root password
 
+    // DB_URL_BOOT: connects WITHOUT specifying a database.
+    // We use this only once at startup to run: CREATE DATABASE IF NOT EXISTS online_voting
+    private static final String DB_URL_BOOT = "jdbc:mysql://localhost:3306/?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+
+    // DB_URL: connects WITH 'online_voting' already selected as the active database.
+    // All normal queries (INSERT, SELECT, etc.) use this connection.
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/online_voting?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+
+    // 'conn' is the single shared database connection used throughout the entire program
     private static Connection conn;
+
+    // 'sc' is the Scanner that reads whatever the user types in the terminal
     private static final Scanner sc = new Scanner(System.in);
 
     // ─── ENTRY POINT ──────────────────────────────────────────────────────────
@@ -29,58 +47,74 @@ public class OnlineVotingApp {
         System.out.println("╚══════════════════════════════════════╝");
 
         try {
-            // Step 1: Connect without a DB to create it if it doesn't exist
+            // STEP 1 — Connect without a database to safely create it if it doesn't exist yet.
+            // We can't connect to 'online_voting' if it doesn't exist, so we use the boot URL first.
             try (Connection bootstrap = DriverManager.getConnection(DB_URL_BOOT, DB_USER, DB_PASS);
                  Statement st = bootstrap.createStatement()) {
                 st.executeUpdate("CREATE DATABASE IF NOT EXISTS online_voting");
             }
-            // Step 2: Reconnect with the database selected in the URL
+
+            // STEP 2 — Now reconnect properly with the database name in the URL.
+            // From this point on, all SQL queries know which database to use.
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+
+            // Create all tables (if they don't already exist) and seed the default admin account
             setupDatabase();
             System.out.println("[OK] Connected to MySQL.\n");
+
         } catch (SQLException e) {
+            // If anything goes wrong during connection, print the reason and stop the program
             System.out.println("[ERROR] Cannot connect to MySQL: " + e.getMessage());
             System.out.println("Make sure MySQL is running on port 3306.");
             return;
         }
 
-        // Main login/register loop
+        // ── MAIN MENU LOOP ───────────────────────────────────────────────────────
+        // This loop keeps running until the user chooses Exit (option 3).
+        // It's the starting screen that every user sees before logging in.
         while (true) {
             System.out.println("1. Login");
             System.out.println("2. Register");
             System.out.println("3. Exit");
             System.out.print("> ");
-            String choice = sc.nextLine().trim();
+            String choice = sc.nextLine().trim(); // Read the user's typed input
 
+            // Route to the correct action based on what was typed
             switch (choice) {
-                case "1" -> login();
-                case "2" -> register();
-                case "3" -> { System.out.println("Goodbye!"); return; }
+                case "1" -> login();    // Go to login flow
+                case "2" -> register(); // Go to registration flow
+                case "3" -> { System.out.println("Goodbye!"); return; } // Exit program
                 default  -> System.out.println("Invalid choice.\n");
             }
         }
     }
 
-    // ─── AUTH ─────────────────────────────────────────────────────────────────
+    // ─── LOGIN ─────────────────────────────────────────────────────────────────
 
     private static void login() {
+        // Ask the user to type their username and password
         System.out.print("Username: ");
         String username = sc.nextLine().trim();
         System.out.print("Password: ");
         String password = sc.nextLine().trim();
 
+        // PreparedStatement is used instead of plain Statement to prevent SQL Injection attacks.
+        // The '?' placeholders are filled in safely by ps.setString(), not by string concatenation.
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT id, name, role FROM users WHERE username = ? AND password_hash = ?")) {
+
             ps.setString(1, username);
-            ps.setString(2, sha256(password));
-            ResultSet rs = ps.executeQuery();
+            ps.setString(2, sha256(password)); // Hash the password before comparing — never store/compare plain text
+            ResultSet rs = ps.executeQuery();   // Execute the SELECT and get the results
 
             if (rs.next()) {
-                int id       = rs.getInt("id");
-                String name  = rs.getString("name");
-                String role  = rs.getString("role");
+                // rs.next() returns true if at least one row was found — meaning credentials matched
+                int id      = rs.getInt("id");
+                String name = rs.getString("name");
+                String role = rs.getString("role");
                 System.out.println("\nWelcome, " + name + "! [" + role + "]\n");
 
+                // Route to the correct dashboard based on the user's role
                 switch (role) {
                     case "ADMIN"         -> adminMenu(id);
                     case "FIELD_OFFICER" -> officerMenu(id);
@@ -89,6 +123,7 @@ public class OnlineVotingApp {
                     default              -> System.out.println("Unknown role.");
                 }
             } else {
+                // No row found — wrong username or password
                 System.out.println("Invalid username or password.\n");
             }
         } catch (SQLException e) {
@@ -96,7 +131,10 @@ public class OnlineVotingApp {
         }
     }
 
+    // ─── REGISTER ─────────────────────────────────────────────────────────────
+
     private static void register() {
+        // Collect the new user's details from the terminal
         System.out.print("Full Name: ");
         String name = sc.nextLine().trim();
         System.out.print("Username: ");
@@ -105,22 +143,27 @@ public class OnlineVotingApp {
         String password = sc.nextLine().trim();
         System.out.println("Role (VOTER / CANDIDATE / FIELD_OFFICER / ADMIN): ");
         System.out.print("> ");
+        // toUpperCase() ensures 'voter', 'Voter', 'VOTER' are all accepted the same way
         String role = sc.nextLine().trim().toUpperCase();
 
+        // Validate that only one of the four allowed role strings was entered
         if (!role.matches("VOTER|CANDIDATE|FIELD_OFFICER|ADMIN")) {
             System.out.println("Invalid role.\n");
             return;
         }
 
+        // INSERT the new user into the database.
+        // The password is hashed with SHA-256 before saving — we NEVER store passwords in plain text.
         try (PreparedStatement ps = conn.prepareStatement(
                 "INSERT INTO users (username, password_hash, name, role) VALUES (?, ?, ?, ?)")) {
             ps.setString(1, username);
-            ps.setString(2, sha256(password));
+            ps.setString(2, sha256(password)); // Always store the hash, not the real password
             ps.setString(3, name);
             ps.setString(4, role);
             ps.executeUpdate();
             System.out.println("Registered successfully! You can now log in.\n");
         } catch (SQLException e) {
+            // The 'username' column has a UNIQUE constraint in the DB, so duplicates are caught here
             if (e.getMessage().contains("Duplicate")) {
                 System.out.println("Username already taken. Try another.\n");
             } else {
@@ -129,11 +172,15 @@ public class OnlineVotingApp {
         }
     }
 
-    // ─── ADMIN MENU ───────────────────────────────────────────────────────────
+    // ─── ADMIN MENU ─────────────────────────────────────────────────────────────
+    // The Admin is the Election Commission — they have the highest privileges:
+    // approving voters, approving candidates, and seeing live results.
 
     private static void adminMenu(int adminId) {
+        // This while(true) loop keeps the admin inside their menu until they choose Logout.
+        // Every role menu in this program works the same way.
         while (true) {
-            System.out.println("──── ADMIN MENU ────");
+            System.out.println("\u2500\u2500\u2500\u2500 ADMIN MENU \u2500\u2500\u2500\u2500");
             System.out.println("1. View Pending Voter Applications");
             System.out.println("2. Approve/Reject Voter Application");
             System.out.println("3. View Pending Candidate Applications");
@@ -144,22 +191,24 @@ public class OnlineVotingApp {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> viewPendingVoters();
-                case "2" -> approveReject("voter_profiles");
-                case "3" -> viewPendingCandidates();
-                case "4" -> approveReject("candidate_profiles");
-                case "5" -> viewResults();
-                case "6" -> { System.out.println("Logged out.\n"); return; }
+                case "1" -> viewPendingVoters();                  // Shows all voters waiting for approval
+                case "2" -> approveReject("voter_profiles");      // Updates a voter's status
+                case "3" -> viewPendingCandidates();              // Shows all candidates waiting for approval
+                case "4" -> approveReject("candidate_profiles");  // Updates a candidate's status
+                case "5" -> viewResults();                        // Shows live vote counts
+                case "6" -> { System.out.println("Logged out.\n"); return; } // Exit the menu loop
                 default  -> System.out.println("Invalid choice.");
             }
         }
     }
 
-    // ─── FIELD OFFICER MENU ───────────────────────────────────────────────────
+    // ─── FIELD OFFICER MENU ───────────────────────────────────────────────────────
+    // The Field Officer's only job is to verify citizen identity — they can only
+    // see and approve/reject voter ID applications. They cannot touch candidates or results.
 
     private static void officerMenu(int officerId) {
         while (true) {
-            System.out.println("──── FIELD OFFICER MENU ────");
+            System.out.println("\u2500\u2500\u2500\u2500 FIELD OFFICER MENU \u2500\u2500\u2500\u2500");
             System.out.println("1. View Pending Voter Applications");
             System.out.println("2. Approve/Reject Voter Application");
             System.out.println("3. Logout");
@@ -175,11 +224,12 @@ public class OnlineVotingApp {
         }
     }
 
-    // ─── VOTER MENU ───────────────────────────────────────────────────────────
+    // ─── VOTER MENU ─────────────────────────────────────────────────────────────────
+    // A Voter must first apply for a Voter ID (approved by Field Officer) before they can vote.
 
     private static void voterMenu(int voterId, String username) {
         while (true) {
-            System.out.println("──── VOTER MENU ────");
+            System.out.println("\u2500\u2500\u2500\u2500 VOTER MENU \u2500\u2500\u2500\u2500");
             System.out.println("1. Apply for Voter ID");
             System.out.println("2. View My Application Status");
             System.out.println("3. View Approved Candidates");
@@ -191,23 +241,24 @@ public class OnlineVotingApp {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> applyVoterID(voterId);
-                case "2" -> viewMyVoterStatus(voterId);
-                case "3" -> viewApprovedCandidates();
-                case "4" -> castVote(voterId);
-                case "5" -> postForum(voterId);
-                case "6" -> viewForum();
+                case "1" -> applyVoterID(voterId);         // Submit a voter ID application
+                case "2" -> viewMyVoterStatus(voterId);    // Check if application was approved
+                case "3" -> viewApprovedCandidates();      // See who is running
+                case "4" -> castVote(voterId);             // Cast a vote (once only)
+                case "5" -> postForum(voterId);            // Write a message on the forum
+                case "6" -> viewForum();                   // Read forum messages
                 case "7" -> { System.out.println("Logged out.\n"); return; }
                 default  -> System.out.println("Invalid choice.");
             }
         }
     }
 
-    // ─── CANDIDATE MENU ───────────────────────────────────────────────────────
+    // ─── CANDIDATE MENU ────────────────────────────────────────────────────────────
+    // A Candidate applies to run in an election. Their application must be APPROVED by Admin.
 
     private static void candidateMenu(int candidateId, String username) {
         while (true) {
-            System.out.println("──── CANDIDATE MENU ────");
+            System.out.println("\u2500\u2500\u2500\u2500 CANDIDATE MENU \u2500\u2500\u2500\u2500");
             System.out.println("1. Apply for Candidacy");
             System.out.println("2. View My Application Status");
             System.out.println("3. Post on Forum");
@@ -217,10 +268,10 @@ public class OnlineVotingApp {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> applyCandidate(candidateId);
-                case "2" -> viewMyCandidateStatus(candidateId);
-                case "3" -> postForum(candidateId);
-                case "4" -> viewForum();
+                case "1" -> applyCandidate(candidateId);       // Submit party + manifesto
+                case "2" -> viewMyCandidateStatus(candidateId); // Check approval status
+                case "3" -> postForum(candidateId);            // Post on the discussion forum
+                case "4" -> viewForum();                       // Read forum messages
                 case "5" -> { System.out.println("Logged out.\n"); return; }
                 default  -> System.out.println("Invalid choice.");
             }
@@ -229,8 +280,11 @@ public class OnlineVotingApp {
 
     // ─── FEATURE IMPLEMENTATIONS ──────────────────────────────────────────────
 
+    // Lets a voter submit a Voter ID application with their address & constituency.
+    // A voter can only apply ONCE — we check for an existing row first.
+    // Status starts as PENDING until a Field Officer approves it.
     private static void applyVoterID(int userId) {
-        // Check if already applied
+        // Guard: stop if they already have an application in the DB
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT id FROM voter_profiles WHERE user_id = ?")) {
             ps.setInt(1, userId);
@@ -245,6 +299,7 @@ public class OnlineVotingApp {
         System.out.print("Enter your Address: ");
         String address = sc.nextLine().trim();
 
+        // Save the new application. Status is hardcoded to 'PENDING' in the SQL.
         try (PreparedStatement ps = conn.prepareStatement(
                 "INSERT INTO voter_profiles (user_id, constituency, address, status) VALUES (?, ?, ?, 'PENDING')")) {
             ps.setInt(1, userId);
@@ -255,6 +310,7 @@ public class OnlineVotingApp {
         } catch (SQLException e) { System.out.println("[DB ERROR] " + e.getMessage()); }
     }
 
+    // Shows the voter's current application status (PENDING / APPROVED / REJECTED).
     private static void viewMyVoterStatus(int userId) {
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT constituency, status FROM voter_profiles WHERE user_id = ?")) {
@@ -269,7 +325,10 @@ public class OnlineVotingApp {
         } catch (SQLException e) { System.out.println("[DB ERROR] " + e.getMessage()); }
     }
 
+    // Lets a candidate submit their party name, constituency, and manifesto.
+    // Same one-application guard as voter — checked before collecting input.
     private static void applyCandidate(int userId) {
+        // Guard: only one application per candidate allowed
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT id FROM candidate_profiles WHERE user_id = ?")) {
             ps.setInt(1, userId);
@@ -286,6 +345,7 @@ public class OnlineVotingApp {
         System.out.print("Manifesto (brief): ");
         String manifesto = sc.nextLine().trim();
 
+        // Insert into candidate_profiles with status PENDING
         try (PreparedStatement ps = conn.prepareStatement(
                 "INSERT INTO candidate_profiles (user_id, party, constituency, manifesto, status) VALUES (?, ?, ?, ?, 'PENDING')")) {
             ps.setInt(1, userId);
@@ -297,6 +357,7 @@ public class OnlineVotingApp {
         } catch (SQLException e) { System.out.println("[DB ERROR] " + e.getMessage()); }
     }
 
+    // Shows the candidate's current application status.
     private static void viewMyCandidateStatus(int userId) {
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT party, constituency, status FROM candidate_profiles WHERE user_id = ?")) {
@@ -312,6 +373,8 @@ public class OnlineVotingApp {
         } catch (SQLException e) { System.out.println("[DB ERROR] " + e.getMessage()); }
     }
 
+    // Queries all voter_profiles rows with status='PENDING' and prints them.
+    // Uses a JOIN to get the user's name from the users table.
     private static void viewPendingVoters() {
         System.out.println("\n── Pending Voter Applications ──");
         try (Statement st = conn.createStatement();
@@ -331,6 +394,7 @@ public class OnlineVotingApp {
         System.out.println();
     }
 
+    // Same pattern as viewPendingVoters but for candidates. Shows party & manifesto too.
     private static void viewPendingCandidates() {
         System.out.println("\n── Pending Candidate Applications ──");
         try (Statement st = conn.createStatement();
@@ -351,6 +415,9 @@ public class OnlineVotingApp {
         System.out.println();
     }
 
+    // Shared approve/reject method used for BOTH voter and candidate tables.
+    // The 'table' parameter is passed in from the menu (e.g. "voter_profiles").
+    // Uses a ternary operator: if action is APPROVE -> APPROVED, if REJECT -> REJECTED.
     private static void approveReject(String table) {
         System.out.print("Enter Application ID: ");
         String idStr = sc.nextLine().trim();
@@ -371,6 +438,7 @@ public class OnlineVotingApp {
         }
     }
 
+    // Lists all candidates whose status is APPROVED so a voter can pick one to vote for.
     private static void viewApprovedCandidates() {
         System.out.println("\n── Approved Candidates ──");
         try (Statement st = conn.createStatement();
@@ -391,6 +459,10 @@ public class OnlineVotingApp {
         System.out.println();
     }
 
+    // The most critical method — enforces three rules before saving a vote:
+    // 1. Voter must have an APPROVED Voter ID.
+    // 2. Voter must not have voted already (votes table has UNIQUE on voter_id).
+    // 3. The candidate ID entered must exist and be APPROVED.
     private static void castVote(int voterId) {
         // Check voter is approved
         try (PreparedStatement ps = conn.prepareStatement(
@@ -440,6 +512,9 @@ public class OnlineVotingApp {
         }
     }
 
+    // Shows a live leaderboard. Uses LEFT JOIN so candidates with 0 votes still appear.
+    // COUNT(v.id) counts how many votes each candidate has received.
+    // ORDER BY votes DESC puts the winner at the top.
     private static void viewResults() {
         System.out.println("\n──── LIVE ELECTION RESULTS ────");
         try (Statement st = conn.createStatement();
@@ -463,6 +538,7 @@ public class OnlineVotingApp {
         System.out.println();
     }
 
+    // Saves a text message from the logged-in user into the forum_posts table.
     private static void postForum(int userId) {
         System.out.print("Your message: ");
         String content = sc.nextLine().trim();
@@ -477,6 +553,7 @@ public class OnlineVotingApp {
         } catch (SQLException e) { System.out.println("[DB ERROR] " + e.getMessage()); }
     }
 
+    // Fetches the latest 20 forum posts, newest first, and prints them with timestamps.
     private static void viewForum() {
         System.out.println("\n──── DISCUSSION FORUM ────");
         try (Statement st = conn.createStatement();
@@ -495,11 +572,12 @@ public class OnlineVotingApp {
         System.out.println();
     }
 
-    // ─── DATABASE SETUP (runs on first launch) ────────────────────────────────
-
+    // ─── DATABASE SETUP ────────────────────────────────────────────────────────
+    // Runs once at startup. Creates all tables if they don't already exist.
+    // 'IF NOT EXISTS' is key — it means this is safe to run every time without wiping data.
+    // Also inserts the default admin account using INSERT IGNORE (skips if already there).
     private static void setupDatabase() throws SQLException {
-        // By this point conn is already connected to online_voting (via DB_URL)
-        // Just create tables and seed default admin if needed
+        // conn is already connected to the online_voting database at this point
         try (Statement st = conn.createStatement()) {
             st.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS users (
@@ -558,15 +636,20 @@ public class OnlineVotingApp {
         }
     }
 
-    // ─── UTILITY: SHA-256 PASSWORD HASH ──────────────────────────────────────
-
+    // ─── SHA-256 PASSWORD HASHING ─────────────────────────────────────────────
+    // Converts a plain-text password into a fixed-length 64-character hex string.
+    // SHA-256 is a one-way function — you cannot reverse it to get the original password.
+    // This means even if the database is stolen, real passwords are safe.
     private static String sha256(String input) {
         try {
+            // Get the SHA-256 hashing algorithm from Java's built-in crypto library
             MessageDigest md = MessageDigest.getInstance("SHA-256");
+            // Compute the hash as a raw array of bytes
             byte[] hash = md.digest(input.getBytes("UTF-8"));
+            // Convert each byte to a 2-character hex string (e.g. byte 255 -> "ff")
             StringBuilder sb = new StringBuilder();
             for (byte b : hash) sb.append(String.format("%02x", b));
-            return sb.toString();
+            return sb.toString(); // Return the final 64-character hex hash
         } catch (Exception e) {
             throw new RuntimeException("SHA-256 not available", e);
         }

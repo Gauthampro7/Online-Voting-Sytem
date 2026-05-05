@@ -5,555 +5,366 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Voting System - Project Documentation</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
             --bg-dark: #0b0f19;
-            --bg-card: rgba(25, 30, 40, 0.7);
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --accent-primary: #3b82f6;
-            --accent-secondary: #10b981;
-            --accent-warning: #f59e0b;
+            --bg-card: rgba(25, 30, 40, 0.8);
+            --border: rgba(255,255,255,0.08);
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --blue: #3b82f6;
+            --green: #10b981;
+            --yellow: #f59e0b;
+            --pink: #ec4899;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            scroll-behavior: smooth;
-        }
-
+        * { margin:0; padding:0; box-sizing:border-box; scroll-behavior:smooth; }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            line-height: 1.7;
-            overflow-x: hidden;
-            background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
-                              radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.15), transparent 25%);
-            background-attachment: fixed;
+            font-family:'Inter',sans-serif; background:var(--bg-dark); color:var(--text);
+            line-height:1.7; overflow-x:hidden;
+            background-image: radial-gradient(circle at 15% 50%, rgba(59,130,246,0.12), transparent 25%),
+                              radial-gradient(circle at 85% 30%, rgba(16,185,129,0.12), transparent 25%);
+            background-attachment:fixed;
         }
-
-        /* Layout */
-        .wrapper {
-            display: flex;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
+        .wrapper { display:flex; max-width:1400px; margin:0 auto; }
         .sidebar {
-            width: 280px;
-            height: 100vh;
-            position: sticky;
-            top: 0;
-            padding: 2.5rem 2rem;
-            border-right: 1px solid var(--border-glass);
-            background: rgba(11, 15, 25, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 100;
+            width:280px; height:100vh; position:sticky; top:0;
+            padding:2.5rem 2rem; border-right:1px solid var(--border);
+            background:rgba(11,15,25,0.9); backdrop-filter:blur(20px); z-index:100;
+            overflow-y:auto;
         }
-
-        .main-content {
-            flex: 1;
-            padding: 4rem 5rem;
-            max-width: 1000px;
-        }
-
-        /* Typography */
-        h1, h2, h3, h4 {
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 1rem;
-        }
-
-        h1 { font-size: 3.5rem; letter-spacing: -1px; background: linear-gradient(135deg, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        h2 { font-size: 2.2rem; margin-top: 4rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.5rem; }
-        h3 { font-size: 1.5rem; margin-top: 2rem; color: #e2e8f0; }
-        p { margin-bottom: 1.5rem; font-size: 1.05rem; color: var(--text-muted); }
-        strong { color: #e2e8f0; }
-
-        /* Sidebar Links */
-        .sidebar-brand { font-size: 1.2rem; font-weight: 700; margin-bottom: 3rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 2px;}
-        .sidebar-nav { display: flex; flex-direction: column; gap: 1rem; }
+        .sidebar-brand { font-size:1.1rem; font-weight:700; margin-bottom:2rem; color:var(--text); text-transform:uppercase; letter-spacing:2px; }
+        .sidebar-nav { display:flex; flex-direction:column; gap:0.6rem; }
         .sidebar-nav a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            padding-left: 1rem;
-            border-left: 2px solid transparent;
+            color:var(--muted); text-decoration:none; font-size:0.9rem; font-weight:500;
+            padding:0.4rem 1rem; border-left:2px solid transparent; border-radius:0 4px 4px 0;
+            transition:all 0.2s ease;
         }
-        .sidebar-nav a:hover, .sidebar-nav a.active {
-            color: var(--accent-primary);
-            border-left: 2px solid var(--accent-primary);
+        .sidebar-nav a:hover { color:var(--blue); border-left-color:var(--blue); background:rgba(59,130,246,0.05); }
+        .main-content { flex:1; padding:4rem 5rem; max-width:980px; }
+        h1 { font-size:3rem; font-weight:700; letter-spacing:-1px; background:linear-gradient(135deg,#fff,#94a3b8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:1rem; }
+        h2 { font-size:2rem; font-weight:700; margin-top:4rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); margin-bottom:1.5rem; }
+        h3 { font-size:1.3rem; font-weight:600; margin-top:1.8rem; margin-bottom:0.8rem; color:#e2e8f0; }
+        h4 { font-size:1.1rem; font-weight:600; margin-bottom:0.5rem; }
+        p { margin-bottom:1.2rem; font-size:1rem; color:var(--muted); }
+        strong { color:#e2e8f0; }
+        code { font-family:'Fira Code',monospace; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-size:0.88rem; color:#93c5fd; }
+        pre { background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:10px; padding:1.5rem; overflow-x:auto; margin:1rem 0 1.5rem; }
+        pre code { background:none; padding:0; color:#e2e8f0; font-size:0.88rem; line-height:1.6; }
+        .card {
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:14px; padding:1.8rem; margin-bottom:1.5rem;
+            backdrop-filter:blur(16px);
         }
-
-        /* Glass Cards */
-        .glass-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-glass);
-            border-radius: 16px;
-            padding: 2.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-            transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(59, 130, 246, 0.3);
-        }
-
-        /* Code Blocks */
-        pre[class*="language-"] {
-            background: #111827 !important;
-            border: 1px solid var(--border-glass);
-            border-radius: 12px;
-            margin: 1.5rem 0 !important;
-            padding: 1.5rem !important;
-            box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.2);
-        }
-        code[class*="language-"], pre[class*="language-"] {
-            font-family: 'Fira Code', monospace !important;
-            font-size: 0.9rem !important;
-        }
-
-        /* Badges & Accents */
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 9999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 1rem;
-        }
-        .badge-blue { background: rgba(59, 130, 246, 0.1); color: var(--accent-primary); border: 1px solid rgba(59, 130, 246, 0.2); }
-        .badge-green { background: rgba(16, 185, 129, 0.1); color: var(--accent-secondary); border: 1px solid rgba(16, 185, 129, 0.2); }
-
-        /* Diagram / Visuals */
-        .diagram-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 2rem;
-            margin: 3rem 0;
-            padding: 2rem;
-            background: rgba(0,0,0,0.2);
-            border-radius: 16px;
-            border: 1px dashed rgba(255,255,255,0.1);
-        }
-        .diagram-node {
-            background: linear-gradient(145deg, #1e293b, #0f172a);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 1.5rem;
-            border-radius: 12px;
-            text-align: center;
-            flex: 1;
-            min-width: 200px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            position: relative;
-        }
-        .diagram-node h4 { margin-bottom: 0.5rem; font-size: 1.1rem; color: #f1f5f9; }
-        .diagram-node p { font-size: 0.85rem; margin-bottom: 0; }
-        
-        /* Step Grid */
-        .step-grid {
-            display: grid;
-            grid-template-columns: 50px 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .step-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-        }
-
-        @media (max-width: 1024px) {
-            .wrapper { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; position: static; padding: 1.5rem; border-right: none; border-bottom: 1px solid var(--border-glass); }
-            .sidebar-nav { flex-direction: row; flex-wrap: wrap; }
-            .main-content { padding: 2rem; }
-        }
+        .badge { display:inline-block; padding:4px 14px; border-radius:999px; font-size:0.8rem; font-weight:600; background:rgba(59,130,246,0.15); color:var(--blue); border:1px solid rgba(59,130,246,0.3); margin-bottom:1.2rem; }
+        .badge-green { background:rgba(16,185,129,0.15); color:var(--green); border-color:rgba(16,185,129,0.3); }
+        .role-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem; }
+        .role-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.3rem; }
+        .role-icon { font-size:1.8rem; margin-bottom:0.6rem; }
+        .flow-steps { display:flex; flex-direction:column; gap:1rem; }
+        .flow-step { display:flex; gap:1rem; align-items:flex-start; }
+        .step-num { min-width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; background:var(--blue); color:#fff; flex-shrink:0; margin-top:2px; }
+        .table-creds { width:100%; border-collapse:collapse; margin-top:1rem; }
+        .table-creds th, .table-creds td { padding:0.7rem 1.2rem; text-align:left; border-bottom:1px solid var(--border); font-size:0.95rem; }
+        .table-creds th { color:var(--blue); font-weight:600; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; }
+        .table-creds td { color:var(--muted); }
+        .table-creds td code { color:#a5f3fc; }
+        ul, ol { margin-left:1.5rem; color:var(--muted); margin-bottom:1.2rem; }
+        li { margin-bottom:0.4rem; }
+        section { padding-bottom:2rem; }
     </style>
 </head>
 <body>
-
 <div class="wrapper">
-    <!-- Sticky Sidebar -->
     <aside class="sidebar">
-        <div class="sidebar-brand">Project Docs</div>
+        <div class="sidebar-brand">Docs</div>
         <nav class="sidebar-nav">
-            <a href="#intro">1. Introduction & Overview</a>
-            <a href="#structure">2. Project File Structure</a>
-            <a href="#maven">3. Maven & Dependency Management</a>
-            <a href="#architecture">4. System Architecture</a>
-            <a href="#roles">5. User Roles & Workflows</a>
-            <a href="#database">6. Database & JDBC Connect</a>
-            <a href="#backend">7. Backend (Spring Boot)</a>
-            <a href="#frontend">8. Frontend (Thymeleaf)</a>
-            <a href="#security">9. Security & Authorization</a>
+            <a href="#intro">1. Introduction</a>
+            <a href="#tech">2. Technology Stack</a>
+            <a href="#structure">3. File Structure</a>
+            <a href="#database">4. Database Design</a>
+            <a href="#roles">5. User Roles</a>
+            <a href="#flow">6. Full App Flow</a>
+            <a href="#code">7. Code Explained</a>
+            <a href="#security">8. Security</a>
+            <a href="#run">9. How to Run</a>
             <a href="#future">10. Future Scope</a>
-            <a href="#conclusion">11. Conclusion</a>
         </nav>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
-        
-        <!-- Hero Section -->
-        <section id="intro" style="margin-bottom: 6rem; margin-top: 2rem;">
-            <span class="badge badge-blue">Final Year Project</span>
+
+        <!-- INTRO -->
+        <section id="intro" style="margin-top:2rem;">
+            <span class="badge">Final Year Project</span>
             <h1>Online National Polling System</h1>
-            <p style="font-size: 1.25rem; max-width: 800px; margin-top: 1.5rem;">
-                A comprehensive, highly secure, and aesthetically premium Java-based web application designed to facilitate democratic online voting, candidate nomination, and real-time result tracking.
-            </p>
+            <p style="font-size:1.15rem; max-width:700px;">A fully functional, role-based electronic voting system built as a <strong>Java command-line application</strong> with a <strong>MySQL database</strong>. No web browser or framework needed — just run and interact in the terminal.</p>
+
+            <div class="card">
+                <h4>Project at a Glance</h4>
+                <ul>
+                    <li><strong>Language:</strong> Java 17</li>
+                    <li><strong>Database:</strong> MySQL / MariaDB (via JDBC)</li>
+                    <li><strong>Interface:</strong> Terminal / Command Line (CLI)</li>
+                    <li><strong>Build Tool:</strong> Maven (for dependency management only)</li>
+                    <li><strong>Total Java Files:</strong> 1 (everything in <code>OnlineVotingApp.java</code>)</li>
+                    <li><strong>Total Lines of Code:</strong> ~650</li>
+                </ul>
+            </div>
         </section>
 
-        <!-- File Structure Section -->
-        <section id="structure">
-            <h2>Project File Structure</h2>
-            <p>A well-organized project structure is the backbone of any Spring Boot application. We follow the <strong>Layered Architecture</strong> pattern to separate concerns and ensure maintainability.</p>
-            
-            <div class="glass-card">
-                <div class="step-grid">
-                    <div class="step-number" style="background: var(--accent-secondary);">📂</div>
-                    <div>
-                        <h4>src/main/java (The Source Code)</h4>
-                        <p>This directory contains the logic of the application, organized into meaningful packages:</p>
-                        <ul>
-                            <li><strong>com.dsu.onlinevoting.config:</strong> Contains <code>SecurityConfig.java</code>, where we define access rules and password encryption beans.</li>
-                            <li><strong>com.dsu.onlinevoting.controller:</strong> The "Traffic Police" of the app. These classes (like <code>VoterController.java</code>) handle incoming web requests and return HTML pages.</li>
-                            <li><strong>com.dsu.onlinevoting.model:</strong> Our <code>Entities</code>. These classes define the structure of our database tables using JPA annotations.</li>
-                            <li><strong>com.dsu.onlinevoting.repository:</strong> Interfaces that talk to the database. They extend <code>JpaRepository</code> to provide CRUD operations without writing SQL.</li>
-                            <li><strong>com.dsu.onlinevoting.service:</strong> The "Brain" of the app. This layer contains business logic, such as calculating results or verifying vote eligibility.</li>
-                        </ul>
-                    </div>
-                </div>
+        <!-- TECH STACK -->
+        <section id="tech">
+            <h2>Technology Stack</h2>
+            <p>The design priority was <strong>simplicity</strong>. Every technology choice was made to keep the code easy to read and explain.</p>
 
-                <div class="step-grid">
-                    <div class="step-number" style="background: var(--accent-warning);">📄</div>
-                    <div>
-                        <h4>src/main/resources (The Assets)</h4>
-                        <ul>
-                            <li><strong>templates/:</strong> Contains all Thymeleaf HTML files. These are transformed into dynamic web pages at runtime.</li>
-                            <li><strong>static/:</strong> Holds our custom <code>styles.css</code> and any images/icons used in the design.</li>
-                            <li><strong>application.properties:</strong> The central configuration file for database URLs, ports, and Hibernate settings.</li>
-                        </ul>
-                    </div>
+            <div class="card">
+                <h3>Java (Language)</h3>
+                <p>Java is the core programming language. We use <strong>Java 17</strong>, which supports modern features like text blocks (<code>"""..."""</code>) for writing multi-line SQL cleanly, and the arrow-style <code>switch</code> statement for menus.</p>
+
+                <h3>JDBC (Database Connection)</h3>
+                <p><strong>JDBC (Java Database Connectivity)</strong> is Java's built-in way to talk to databases. Instead of a framework, we use raw JDBC: we write SQL queries as strings and send them directly. This is more work than an ORM, but you can see exactly what SQL is being run at all times — great for learning.</p>
+
+                <h3>MySQL / MariaDB (Database)</h3>
+                <p>The data is stored in a <strong>MySQL-compatible database</strong> (we use the bundled portable MariaDB). MySQL is relational, meaning data is organised into tables with rows and columns — perfect for structured voting data.</p>
+
+                <h3>Maven (Build Tool)</h3>
+                <p>Maven is used only to manage one dependency: the <strong>MySQL Connector/J</strong> JAR file (the JDBC driver that lets Java talk to MySQL). Without Maven, you'd need to manually download this JAR and add it to the classpath yourself.</p>
+            </div>
+        </section>
+
+        <!-- FILE STRUCTURE -->
+        <section id="structure">
+            <h2>File Structure</h2>
+            <pre><code>Online Voting System/
+│
+├── src/main/java/com/dsu/onlinevoting/
+│   └── OnlineVotingApp.java        ← The ENTIRE application (650 lines)
+│
+├── mariadb/                        ← Portable MariaDB (the database server)
+│   └── mariadb-10.6.14-winx64/
+│       └── bin/mysqld.exe          ← The DB server executable
+│
+├── pom.xml                         ← Maven config (declares mysql-connector-j dependency)
+├── run.bat                         ← One-click launcher for the app
+└── Project_Documentation.html     ← This file</code></pre>
+
+            <div class="card">
+                <h4>Why one Java file?</h4>
+                <p>A real-world project would split code into separate files (Controller, Service, Repository layers). For this project, everything is in <strong>one file</strong> intentionally — it's easier to navigate, demo, and explain. Each "section" inside the file is separated by a banner comment like <code>// ─── SECTION NAME ───</code>.</p>
+            </div>
+        </section>
+
+        <!-- DATABASE -->
+        <section id="database">
+            <h2>Database Design</h2>
+            <p>The application uses <strong>5 tables</strong>. They are created automatically on first run — no manual SQL setup needed.</p>
+
+            <div class="card">
+                <h3>users</h3>
+                <p>The central table. Every person in the system is a user — whether voter, candidate, officer, or admin.</p>
+                <pre><code>users (
+    id            INT  PRIMARY KEY AUTO_INCREMENT,
+    username      VARCHAR(100) UNIQUE NOT NULL,  -- login name
+    password_hash VARCHAR(64)  NOT NULL,         -- SHA-256 hash, never plain text
+    name          VARCHAR(200) NOT NULL,
+    role          ENUM('VOTER','CANDIDATE','FIELD_OFFICER','ADMIN')
+)</code></pre>
+
+                <h3>voter_profiles</h3>
+                <p>Stores a voter's Voter ID application. Linked to <code>users</code> via <code>user_id</code>. One voter can only have one profile (UNIQUE constraint).</p>
+                <pre><code>voter_profiles (
+    id           INT PRIMARY KEY AUTO_INCREMENT,
+    user_id      INT UNIQUE,    -- Foreign key to users.id
+    constituency VARCHAR(200),
+    address      TEXT,
+    status       ENUM('PENDING','APPROVED','REJECTED') DEFAULT 'PENDING'
+)</code></pre>
+
+                <h3>candidate_profiles</h3>
+                <p>Stores a candidate's election application. Same structure as voter_profiles but with party and manifesto fields.</p>
+                <pre><code>candidate_profiles (
+    id           INT PRIMARY KEY AUTO_INCREMENT,
+    user_id      INT UNIQUE,
+    party        VARCHAR(200),
+    constituency VARCHAR(200),
+    manifesto    TEXT,
+    status       ENUM('PENDING','APPROVED','REJECTED') DEFAULT 'PENDING'
+)</code></pre>
+
+                <h3>votes</h3>
+                <p>Stores each cast vote. <code>voter_id</code> is UNIQUE — this is how we enforce the one-person-one-vote rule at the database level.</p>
+                <pre><code>votes (
+    id           INT PRIMARY KEY AUTO_INCREMENT,
+    voter_id     INT UNIQUE,   -- UNIQUE prevents double voting
+    candidate_id INT,
+    voted_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)</code></pre>
+
+                <h3>forum_posts</h3>
+                <p>Stores discussion messages. No UNIQUE constraint — users can post multiple times.</p>
+                <pre><code>forum_posts (
+    id        INT PRIMARY KEY AUTO_INCREMENT,
+    user_id   INT,
+    content   TEXT,
+    posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)</code></pre>
+            </div>
+        </section>
+
+        <!-- ROLES -->
+        <section id="roles">
+            <h2>User Roles</h2>
+            <p>There are 4 roles in the system. Each role sees a different menu when they log in.</p>
+
+            <div class="role-grid">
+                <div class="role-card">
+                    <div class="role-icon">🗳️</div>
+                    <h4>VOTER</h4>
+                    <p style="font-size:0.9rem;">The general public. Must apply for a Voter ID (approved by an officer) before they can vote. Can vote once, post on forum.</p>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">🎙️</div>
+                    <h4>CANDIDATE</h4>
+                    <p style="font-size:0.9rem;">Citizens running for office. Submit party name, constituency, and manifesto. Must be approved by Admin to appear on ballot.</p>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">🔍</div>
+                    <h4>FIELD_OFFICER</h4>
+                    <p style="font-size:0.9rem;">Verifies voter identity. Can only see and approve/reject voter ID applications. Cannot touch candidates or results.</p>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">👑</div>
+                    <h4>ADMIN</h4>
+                    <p style="font-size:0.9rem;">The Election Commission. Approves both voters and candidates. Can view the live vote tally ranked by winner.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Maven Section -->
-        <section id="maven">
-            <h2>Maven & Dependency Management</h2>
-            <p>Modern Java development relies on <strong>Maven</strong> to manage project lifecycles. Instead of manually downloading JAR files, we define our needs in the <code>pom.xml</code> (Project Object Model) file.</p>
-            
-            <div class="glass-card">
-                <h3>Why use Maven?</h3>
-                <p>Maven provides several critical benefits for a college project of this scale:</p>
-                <ol style="margin-left: 1.5rem; color: var(--text-muted); margin-bottom: 2rem;">
-                    <li><strong>Dependency Resolution:</strong> Automatically downloads all libraries (Spring, Hibernate, MySQL Driver) from the central repository.</li>
-                    <li><strong>Build Automation:</strong> Compiles, tests, and packages the code into a runnable <code>.jar</code> file with a single command.</li>
-                    <li><strong>Reproducibility:</strong> Ensures that if another developer (or your professor) runs the project, they get exactly the same environment.</li>
+        <!-- FULL FLOW -->
+        <section id="flow">
+            <h2>Full Application Flow</h2>
+
+            <div class="card">
+                <h3>Complete Demo Sequence</h3>
+                <div class="flow-steps">
+                    <div class="flow-step"><div class="step-num">1</div><div><strong>Register a Candidate</strong> — Register with role <code>CANDIDATE</code>, then log in → "Apply for Candidacy" → enter party, constituency, manifesto.</div></div>
+                    <div class="flow-step"><div class="step-num">2</div><div><strong>Register a Voter</strong> — Register with role <code>VOTER</code>, log in → "Apply for Voter ID" → enter constituency and address.</div></div>
+                    <div class="flow-step"><div class="step-num">3</div><div><strong>Officer Approves Voter</strong> — Log in as Field Officer → "View Pending Voter Applications" → note the ID → "Approve/Reject" → enter ID → APPROVE.</div></div>
+                    <div class="flow-step"><div class="step-num">4</div><div><strong>Admin Approves Candidate</strong> — Log in as Admin → "View Pending Candidates" → "Approve/Reject" → enter ID → APPROVE.</div></div>
+                    <div class="flow-step"><div class="step-num">5</div><div><strong>Voter Casts Vote</strong> — Log back in as Voter → "Cast Vote" → see the approved candidate list → enter Candidate ID → Vote recorded.</div></div>
+                    <div class="flow-step"><div class="step-num">6</div><div><strong>Admin Views Results</strong> — Log in as Admin → "View Live Election Results" → see the ranked leaderboard.</div></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:1rem;">
+                <h3>Default Login Credentials</h3>
+                <table class="table-creds">
+                    <tr><th>Role</th><th>Username</th><th>Password</th></tr>
+                    <tr><td>Admin</td><td><code>admin</code></td><td><code>admin123</code></td></tr>
+                    <tr><td>Others</td><td>whatever you registered with</td><td>whatever you chose</td></tr>
+                </table>
+            </div>
+        </section>
+
+        <!-- CODE EXPLAINED -->
+        <section id="code">
+            <h2>Code Structure Explained</h2>
+            <p>Everything is inside <code>OnlineVotingApp.java</code>. Here is what each section does:</p>
+
+            <div class="card">
+                <h3>1. Imports (top of file)</h3>
+                <pre><code>import java.security.MessageDigest; // For SHA-256 hashing
+import java.sql.*;                  // JDBC: Connection, Statement, ResultSet, etc.
+import java.util.Scanner;           // Reads user input from the terminal</code></pre>
+
+                <h3>2. DB Config Constants</h3>
+                <pre><code>private static final String DB_URL_BOOT = "jdbc:mysql://localhost:3306/...";
+private static final String DB_URL      = "jdbc:mysql://localhost:3306/online_voting...";</code></pre>
+                <p>Two URLs are used. <code>DB_URL_BOOT</code> connects without specifying a database (needed to run <code>CREATE DATABASE</code>). <code>DB_URL</code> connects with the database already selected for all normal operations.</p>
+
+                <h3>3. main() — Program Entry Point</h3>
+                <p>Runs at startup. Creates the DB if needed, then calls <code>setupDatabase()</code> to create tables, then enters the main login/register loop.</p>
+
+                <h3>4. login() and register()</h3>
+                <p><code>login()</code> queries the <code>users</code> table with a hashed password. If found, it routes to the correct role menu. <code>register()</code> inserts a new user row with a hashed password. Both use <strong>PreparedStatement</strong> to prevent SQL Injection.</p>
+
+                <h3>5. Role Menus (adminMenu, voterMenu, etc.)</h3>
+                <p>Each is a <code>while(true)</code> loop that keeps showing the menu until the user picks "Logout" (which calls <code>return</code> to exit the loop).</p>
+
+                <h3>6. Feature Methods</h3>
+                <p>These are the actual operations: <code>castVote()</code>, <code>approveReject()</code>, <code>viewResults()</code>, etc. Each one builds a SQL query, executes it, and prints the result.</p>
+
+                <h3>7. setupDatabase()</h3>
+                <p>Uses <code>CREATE TABLE IF NOT EXISTS</code> for every table — safe to run every startup without losing any data.</p>
+
+                <h3>8. sha256()</h3>
+                <p>A utility method that converts a password string into a 64-character hex hash. Called whenever a password is saved or compared — the raw password is never stored.</p>
+            </div>
+        </section>
+
+        <!-- SECURITY -->
+        <section id="security">
+            <h2>Security</h2>
+
+            <div class="card">
+                <h3>Password Hashing (SHA-256)</h3>
+                <p>Passwords are never stored in plain text. When a user registers, their password is run through <strong>SHA-256</strong> (a one-way mathematical function). The resulting 64-character string is what gets saved to the database. When they log in, the typed password is hashed again and compared. This means even if someone reads the database, they cannot see real passwords.</p>
+
+                <h3>SQL Injection Prevention</h3>
+                <p>All user inputs are passed through <strong>PreparedStatement</strong> with <code>?</code> placeholders. This prevents SQL Injection — a common attack where malicious input like <code>' OR 1=1 --</code> is typed to manipulate queries. With PreparedStatement, the input is treated as data, not SQL code.</p>
+
+                <h3>One-Vote Enforcement</h3>
+                <p>The <code>votes</code> table has a <code>UNIQUE</code> constraint on <code>voter_id</code>. Even if the application code had a bug, the database itself would reject a second vote from the same person with a duplicate key error.</p>
+
+                <h3>Role-Based Access</h3>
+                <p>After login, the user's <code>role</code> field from the database determines which menu they see. A VOTER cannot reach admin functions — those methods are simply never called from the voter menu.</p>
+            </div>
+        </section>
+
+        <!-- HOW TO RUN -->
+        <section id="run">
+            <h2>How to Run</h2>
+
+            <div class="card">
+                <h3>Step 1 — Start the Database</h3>
+                <p>Open a terminal and run this command. <strong>Keep this terminal open</strong> while using the app.</p>
+                <pre><code>cd "C:\Users\gauth\Online Voting Sytem\mariadb\mariadb-10.6.14-winx64"
+.\bin\mysqld.exe --defaults-file=data\my.ini</code></pre>
+
+                <h3>Step 2 — Run the App (Eclipse)</h3>
+                <ol>
+                    <li>Right-click the project → <strong>Maven → Update Project</strong> (first time only)</li>
+                    <li>Right-click <code>OnlineVotingApp.java</code> → <strong>Run As → Java Application</strong></li>
+                    <li>Type in the Console tab at the bottom of Eclipse</li>
                 </ol>
 
-                <h3>Key Dependencies in pom.xml</h3>
-<pre><code class="language-xml">&lt;!-- Spring Boot Starter Web: Enables MVC and Embedded Tomcat --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
-&lt;/dependency&gt;
+                <h3>Step 3 — Run the App (Terminal / run.bat)</h3>
+                <p>Double-click <code>run.bat</code> from the project folder, or compile and run manually:</p>
+                <pre><code>javac -cp "mysql-connector.jar" -d target\classes src\main\java\...\OnlineVotingApp.java
+java -cp "mysql-connector.jar;target\classes" com.dsu.onlinevoting.OnlineVotingApp</code></pre>
 
-&lt;!-- Spring Data JPA: For Database interactions --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-    &lt;artifactId&gt;spring-boot-starter-data-jpa&lt;/artifactId&gt;
-&lt;/dependency&gt;
-
-&lt;!-- MySQL Connector: The JDBC Driver for MySQL --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;com.mysql&lt;/groupId&gt;
-    &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;
-&lt;/dependency&gt;</code></pre>
+                <h3>First Launch Behaviour</h3>
+                <p>On the very first run, the app will automatically create the <code>online_voting</code> database and all 5 tables. It will also create the default <code>admin</code> account. No manual SQL needed.</p>
             </div>
         </section>
 
-        <!-- Architecture Section -->
-        <section id="architecture">
-            <h2>System Architecture</h2>
-            <p>The system is built on a robust, scalable <strong>Model-View-Controller (MVC)</strong> architecture, heavily utilizing the Spring framework ecosystem. Below is the data flow diagram detailing how a user request traverses the application layers down to the MySQL database.</p>
-            
-            <div class="diagram-container">
-                <div class="diagram-node">
-                    <div style="font-size: 2rem; margin-bottom: 1rem;">🌐</div>
-                    <h4>1. Client View</h4>
-                    <p>Browser rendering HTML5 & CSS via Thymeleaf. Uses HTTP GET/POST to interact.</p>
-                </div>
-                <div style="font-size: 1.5rem; color: var(--accent-primary);">➔</div>
-                <div class="diagram-node">
-                    <div style="font-size: 2rem; margin-bottom: 1rem;">⚙️</div>
-                    <h4>2. Controllers</h4>
-                    <p>The entry point. Uses `@RequestMapping` to map URLs to specific Java methods.</p>
-                </div>
-                <div style="font-size: 1.5rem; color: var(--accent-primary);">➔</div>
-                <div class="diagram-node">
-                    <div style="font-size: 2rem; margin-bottom: 1rem;">🧠</div>
-                    <h4>3. Service Layer</h4>
-                    <p>The heart of the app. Handles complex rules like "Can this user vote twice?".</p>
-                </div>
-                <div style="font-size: 1.5rem; color: var(--accent-primary);">➔</div>
-                <div class="diagram-node" style="border-color: var(--accent-secondary);">
-                    <div style="font-size: 2rem; margin-bottom: 1rem;">🗄️</div>
-                    <h4>4. MySQL / JDBC</h4>
-                    <p>Persistent storage. Spring Data JPA abstracting native JDBC queries via Hibernate.</p>
-                </div>
-            </div>
+        <!-- FUTURE SCOPE -->
+        <section id="future" style="padding-bottom:8rem;">
+            <h2>Future Scope</h2>
 
-            <h3>The Request Lifecycle</h3>
-            <p>When a user clicks "Vote", the request first hits the <strong>Embedded Tomcat Server</strong>. Spring Security intercepts it to check if the user is logged in. If allowed, the <strong>DispatcherServlet</strong> (the front controller) sends the request to the appropriate Controller. The Controller talks to the Service, which uses the Repository to save the vote in MySQL. Finally, a success message is passed back to the Thymeleaf template for rendering.</p>
-        </section>
-
-        <!-- Roles Section -->
-        <section id="roles">
-            <h2>User Roles & Workflows</h2>
-            <p>To simulate a real-world national polling environment, we implemented 4 distinct actors with unique permissions and responsibilities.</p>
-
-            <div class="step-grid">
-                <div class="step-number" style="background: var(--accent-primary);">1</div>
-                <div class="glass-card">
-                    <h4>Voter (General Public)</h4>
-                    <p>The primary user. They can register, apply for a digital Voter ID by submitting their address and constituency, and once approved by an officer, they can cast a single vote. They also have access to the discussion forums to engage with other citizens.</p>
-                </div>
-            </div>
-
-            <div class="step-grid">
-                <div class="step-number" style="background: var(--accent-secondary);">2</div>
-                <div class="glass-card">
-                    <h4>Candidate</h4>
-                    <p>Users who wish to run for office. They must submit a candidacy application including their political party and manifesto. Once an Admin approves their candidacy, their name appears on the ballot for voters in their constituency.</p>
-                </div>
-            </div>
-
-            <div class="step-grid">
-                <div class="step-number" style="background: var(--accent-warning);">3</div>
-                <div class="glass-card">
-                    <h4>Field Officer</h4>
-                    <p>The verification layer. Field officers are responsible for reviewing Voter ID applications. They check the provided documents and click "Approve" to grant the user voting rights, ensuring no duplicate or fake identities enter the system.</p>
-                </div>
-            </div>
-
-            <div class="step-grid">
-                <div class="step-number" style="background: #ec4899;">4</div>
-                <div class="glass-card">
-                    <h4>Administrator</h4>
-                    <p>The Election Commission. Admins have the highest authority. They approve candidate applications, monitor the live tally of votes, and oversee the overall health of the discussion forums. They are the only ones who can see the real-time winner of the election.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Database Section -->
-        <section id="database">
-            <h2>Database & JDBC Connectivity</h2>
-            <p>To persist user data, candidate profiles, and immutable voting records, we utilized a <strong>MySQL</strong> relational database. Instead of writing raw, boilerplate JDBC queries (like <code>DriverManager.getConnection()</code> and <code>PreparedStatement</code>), we leveraged <strong>Spring Data JPA and Hibernate</strong>. This acts as an Object-Relational Mapping (ORM) layer.</p>
-
-            <div class="glass-card">
-                <h3>1. application.properties Configuration</h3>
-                <p>This is the core configuration file that establishes the JDBC connection pool (HikariCP) between our Java application and the MySQL server.</p>
-<pre><code class="language-properties"># Database Configuration
-spring.datasource.url=jdbc:mysql://localhost:3306/online_voting?useSSL=false&serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect</code></pre>
-                <p><strong>Explanation:</strong> <code>ddl-auto=update</code> is a powerful feature that automatically analyzes our Java classes and generates the SQL `CREATE TABLE` commands in MySQL for us. We use <strong>HikariCP</strong> (the default connection pool) to maintain a set of open connections to MySQL, which significantly improves performance by avoiding the overhead of creating a new connection for every single query.</p>
-                <p>The <code>MySQLDialect</code> ensures that Hibernate generates SQL syntax that is specific and optimized for the MySQL database engine, handling things like pagination and auto-incrementing IDs correctly.</p>
-            </div>
-            </div>
-
-            <div class="glass-card">
-                <h3>2. Entity Modeling (The 'M' in MVC)</h3>
-                <p>We mapped our database tables directly to Java Objects (POJOs) using JPA annotations. For example, the Vote table links a voter to a candidate.</p>
-<pre><code class="language-java">@Entity
-public class Vote {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne // Foreign Key to the Users table
-    @JoinColumn(name = "voter_id", nullable = false)
-    private User voter;
-
-    @ManyToOne // Foreign Key to the Users table
-    @JoinColumn(name = "candidate_id", nullable = false)
-    private User candidate;
-    
-    private LocalDateTime timestamp;
-}</code></pre>
-            </div>
-        </section>
-
-        <!-- Backend Section -->
-        <section id="backend">
-            <h2>Backend Logic (Spring Boot)</h2>
-            <p>The backend is divided into Repositories (Data Access) and Services (Business Logic).</p>
-
-            <div class="step-grid">
-                <div class="step-number">A</div>
-                <div>
-                    <h4>Repository Interface</h4>
-                    <p>By extending <code>JpaRepository</code>, we instantly inherit methods like <code>save()</code>, <code>findAll()</code>, and <code>findById()</code> without writing SQL.</p>
-<pre><code class="language-java">public interface VoteRepository extends JpaRepository&lt;Vote, Long&gt; {
-    // Spring dynamically generates a "SELECT * FROM vote WHERE voter_id = ?" query!
-    Optional&lt;Vote&gt; findByVoter(User voter);
-    long countByCandidate(User candidate);
-}</code></pre>
-                    <p>We use <code>Optional&lt;T&gt;</code> to handle cases where a record might not exist (preventing the dreaded <code>NullPointerException</code>). This encourages safer coding practices throughout the backend.</p>
-                </div>
-            </div>
-
-            <div class="step-grid">
-                <div class="step-number">B</div>
-                <div>
-                    <h4>Service Layer</h4>
-                    <p>This is where the actual logic resides. We use <code>@Transactional</code> to ensure that if something fails during a multi-step database process, the entire transaction rolls back to prevent corrupted data.</p>
-<pre><code class="language-java">@Service
-public class VotingService {
-    @Transactional
-    public boolean castVote(User voter, User candidate) {
-        if (!hasVoted(voter)) {
-            Vote vote = new Vote(voter, candidate);
-            voteRepository.save(vote); // Inserts into MySQL via JDBC
-            return true;
-        }
-        return false;
-    }
-}</code></pre>
-                </div>
-            </div>
-        </section>
-
-        <!-- Frontend Section -->
-        <section id="frontend">
-            <h2>Frontend Design (Thymeleaf & Glassmorphism)</h2>
-            <p>For the user interface, we avoided heavy Javascript frameworks to keep the project completely Java-centric. We used <strong>Thymeleaf</strong>, a server-side Java template engine that allows us to inject Java variables directly into HTML.</p>
-
-            <div class="glass-card">
-                <h3>Thymeleaf Integration</h3>
-                <p>We pass data from the Controller to the View using the <code>Model</code> object. Below is how we loop through the approved candidates and display them to the voter.</p>
-<pre><code class="language-html">&lt;div class="grid" th:if="${not #lists.isEmpty(candidates)}"&gt;
-    &lt;!-- Loop through candidates --&gt;
-    &lt;div th:each="candidate : ${candidates}" class="glass-panel text-center"&gt;
-        &lt;h3 th:text="${candidate.user.name}"&gt;&lt;/h3&gt;
-        &lt;p class="text-muted" th:text="${candidate.party}"&gt;&lt;/p&gt;
-        &lt;p th:text="${candidate.manifesto}"&gt;&lt;/p&gt;
-        
-        &lt;!-- Submit Vote Form --&gt;
-        &lt;form th:action="@{/voter/cast-vote}" method="post"&gt;
-            &lt;input type="hidden" name="candidateUsername" th:value="${candidate.user.username}"&gt;
-            &lt;button type="submit" class="btn btn-primary"&gt;Vote&lt;/button&gt;
-        &lt;/form&gt;
-    &lt;/div&gt;
-&lt;/div&gt;</code></pre>
-                <h3 class="mt-4">The "Glassmorphism" Aesthetic</h3>
-                <p>To ensure a premium feel, we utilized modern Vanilla CSS with backdrop filters to create a frosted glass effect over the dark space background. This involves layering semi-transparent backgrounds with blur effects.</p>
-<pre><code class="language-css">.glass-panel {
-    background: rgba(255, 255, 255, 0.05); /* Semi-transparent */
-    backdrop-filter: blur(12px); /* Frosted glass effect */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}</code></pre>
-                <p>By using <strong>Flexbox</strong> and <strong>CSS Grid</strong>, the layout remains responsive across different screen sizes, ensuring that the voting dashboard looks just as good on a mobile phone as it does on a desktop monitor.</p>
-            </div>
-            </div>
-        </section>
-
-        <!-- Security Section -->
-        <section id="security" style="margin-bottom: 4rem;">
-            <h2>Security & Authorization</h2>
-            <p>Elections require strict security. We implemented <strong>Spring Security</strong> to handle authentication, password hashing (BCrypt), and authorization.</p>
-
-            <div class="glass-card">
-                <h3>Role Hierarchy</h3>
-                <p>We defined 4 distinct roles using a Java Enum: <code>ADMIN</code>, <code>FIELD_OFFICER</code>, <code>CANDIDATE</code>, and <code>VOTER</code>. Spring Security is configured to intercept HTTP requests and block unauthorized access based on these roles.</p>
-<pre><code class="language-java">@Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests((requests) -> requests
-            // Public routes
-            .requestMatchers("/", "/register", "/css/**").permitAll()
-            
-            // Protected routes based on Role
-            .requestMatchers("/admin/**").hasRole("ADMIN")
-            .requestMatchers("/field-officer/**").hasRole("FIELD_OFFICER")
-            .requestMatchers("/voter/**").hasAnyRole("VOTER", "ADMIN")
-            
-            // Block everything else unless logged in
-            .anyRequest().authenticated()
-        )
-        .formLogin((form) -> form.loginPage("/login").defaultSuccessUrl("/dashboard", true));
-
-    return http.build();
-}</code></pre>
-                <p>This guarantees that a normal Voter cannot manually navigate to <code>/admin/results</code> or alter candidate approvals.</p>
-                <h3>Security Highlights</h3>
+            <div class="card">
                 <ul>
-                    <li><strong>BCrypt Hashing:</strong> Passwords are never stored in plain text. BCrypt uses an adaptive hashing algorithm with a salt, making it extremely resistant to rainbow table attacks.</li>
-                    <li><strong>CSRF Protection:</strong> Spring Security automatically adds a hidden CSRF token to every form, preventing "Cross-Site Request Forgery" attacks.</li>
-                    <li><strong>Session Management:</strong> Secure session handling ensures that users are automatically logged out after inactivity.</li>
+                    <li><strong>Web Interface:</strong> Rebuild the CLI as a Spring Boot + Thymeleaf web app for browser access.</li>
+                    <li><strong>OTP Verification:</strong> Send a one-time password to the voter's phone/email to verify identity before voting.</li>
+                    <li><strong>Constituency Filtering:</strong> Only show candidates from the voter's own constituency when casting a vote.</li>
+                    <li><strong>Blockchain Audit Log:</strong> Store each vote as an immutable blockchain record for tamper-proof verification.</li>
+                    <li><strong>BCrypt Passwords:</strong> Upgrade from SHA-256 to BCrypt for stronger password protection (includes a salt).</li>
+                    <li><strong>Connection Pooling:</strong> Replace the single shared <code>Connection</code> with HikariCP for multi-user concurrency.</li>
                 </ul>
-            </div>
-        </section>
-
-        <!-- Future Scope -->
-        <section id="future">
-            <h2>Future Scope & Enhancements</h2>
-            <p>While the current system is fully functional for a graduation project, it can be expanded into a production-ready national platform with the following enhancements:</p>
-            
-            <div class="glass-card">
-                <ul>
-                    <li><strong>Blockchain Integration:</strong> Implementing a private blockchain (like Hyperledger) to store votes as immutable blocks, making the election completely audit-proof and tamper-resistant.</li>
-                    <li><strong>Biometric Verification:</strong> Integrating Aadhaar or Fingerprint APIs to verify the voter's identity in real-time during the login process.</li>
-                    <li><strong>Live Notification System:</strong> Using WebSockets to push real-time voting trends and results to the dashboard without requiring a page refresh.</li>
-                    <li><strong>AI Manifesto Analysis:</strong> Using Natural Language Processing (NLP) to summarize candidate manifestos and highlight key promises for voters.</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- Conclusion -->
-        <section id="conclusion" style="padding-bottom: 10rem;">
-            <h2>Project Conclusion</h2>
-            <p>The <strong>Online National Polling System</strong> successfully demonstrates the power of the Spring Boot ecosystem combined with modern CSS design. By leveraging JPA for database abstraction, Spring Security for robust protection, and Thymeleaf for dynamic rendering, we have built a professional-grade application that is both functional and visually stunning.</p>
-            <div class="glass-card" style="text-align: center;">
-                <p style="color: #fff; font-size: 1.2rem; margin-bottom: 0;">🚀 Project Ready for Deployment & Demonstration</p>
             </div>
         </section>
 
     </main>
 </div>
-
-<!-- Syntax Highlighting Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-properties.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
-
 </body>
 </html>
