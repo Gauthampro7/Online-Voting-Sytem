@@ -80,14 +80,15 @@
         <nav class="sidebar-nav">
             <a href="#intro">1. Introduction</a>
             <a href="#tech">2. Technology Stack</a>
-            <a href="#structure">3. File Structure</a>
-            <a href="#database">4. Database Design</a>
-            <a href="#roles">5. User Roles</a>
-            <a href="#flow">6. Full App Flow</a>
-            <a href="#code">7. Code Explained</a>
-            <a href="#security">8. Security</a>
-            <a href="#run">9. How to Run</a>
-            <a href="#future">10. Future Scope</a>
+            <a href="#pkg-models">3. Packages & Models</a>
+            <a href="#structure">4. File Structure</a>
+            <a href="#database">5. Database Design</a>
+            <a href="#roles">6. User Roles</a>
+            <a href="#flow">7. Full App Flow</a>
+            <a href="#code">8. Code Explained</a>
+            <a href="#architecture">9. Architecture</a>
+            <a href="#security">10. Security</a>
+            <a href="#run">11. How to Run</a>
         </nav>
     </aside>
 
@@ -106,8 +107,7 @@
                     <li><strong>Database:</strong> MySQL / MariaDB (via JDBC)</li>
                     <li><strong>Interface:</strong> Terminal / Command Line (CLI)</li>
                     <li><strong>Build Tool:</strong> Maven (for dependency management only)</li>
-                    <li><strong>Total Java Files:</strong> 1 (everything in <code>OnlineVotingApp.java</code>)</li>
-                    <li><strong>Total Lines of Code:</strong> ~650</li>
+                    <li><strong>Package:</strong> <code>com.dsu.onlinevoting</code></li>
                 </ul>
             </div>
         </section>
@@ -126,9 +126,27 @@
 
                 <h3>MySQL / MariaDB (Database)</h3>
                 <p>The data is stored in a <strong>MySQL-compatible database</strong> (we use the bundled portable MariaDB). MySQL is relational, meaning data is organised into tables with rows and columns — perfect for structured voting data.</p>
+            </div>
+        </section>
 
-                <h3>Maven (Build Tool)</h3>
-                <p>Maven is used only to manage one dependency: the <strong>MySQL Connector/J</strong> JAR file (the JDBC driver that lets Java talk to MySQL). Without Maven, you'd need to manually download this JAR and add it to the classpath yourself.</p>
+        <!-- PACKAGES & MODELS -->
+        <section id="pkg-models">
+            <h2>Packages & Models</h2>
+            <p>Even though this is a CLI application, it follows standard Java conventions for packaging and data modeling.</p>
+
+            <div class="card">
+                <h3>Package: <code>com.dsu.onlinevoting</code></h3>
+                <p>The application is organized under the <code>com.dsu.onlinevoting</code> package. This identifies the code as part of the "Dayananda Sagar University" (DSU) Online Voting project and ensures there are no name conflicts with other Java libraries.</p>
+                
+                <h3>Mental Models (Data Structures)</h3>
+                <p>In this simplified architecture, we don't use separate "Model" classes (like <code>User.java</code>). Instead, the <strong>Database Tables</strong> serve as our Models. Each table represents a core concept:</p>
+                <ul>
+                    <li><strong>User Model:</strong> Stores login credentials and role assignment.</li>
+                    <li><strong>Voter Profile Model:</strong> Stores citizen details and verification status.</li>
+                    <li><strong>Candidate Profile Model:</strong> Stores political party info and manifestos.</li>
+                    <li><strong>Vote Model:</strong> Represents the link between a voter and their chosen candidate.</li>
+                    <li><strong>Forum Post Model:</strong> Represents a message in the community discussion board.</li>
+                </ul>
             </div>
         </section>
 
@@ -138,7 +156,7 @@
             <pre><code>Online Voting System/
 │
 ├── src/main/java/com/dsu/onlinevoting/
-│   └── OnlineVotingApp.java        ← The ENTIRE application (650 lines)
+│   └── OnlineVotingApp.java        ← The ENTIRE application logic
 │
 ├── mariadb/                        ← Portable MariaDB (the database server)
 │   └── mariadb-10.6.14-winx64/
@@ -147,11 +165,6 @@
 ├── pom.xml                         ← Maven config (declares mysql-connector-j dependency)
 ├── run.bat                         ← One-click launcher for the app
 └── Project_Documentation.html     ← This file</code></pre>
-
-            <div class="card">
-                <h4>Why one Java file?</h4>
-                <p>A real-world project would split code into separate files (Controller, Service, Repository layers). For this project, everything is in <strong>one file</strong> intentionally — it's easier to navigate, demo, and explain. Each "section" inside the file is separated by a banner comment like <code>// ─── SECTION NAME ───</code>.</p>
-            </div>
         </section>
 
         <!-- DATABASE -->
@@ -299,6 +312,29 @@ private static final String DB_URL      = "jdbc:mysql://localhost:3306/online_vo
 
                 <h3>8. sha256()</h3>
                 <p>A utility method that converts a password string into a 64-character hex hash. Called whenever a password is saved or compared — the raw password is never stored.</p>
+            </div>
+        </section>
+
+        <!-- ARCHITECTURE -->
+        <section id="architecture">
+            <h2>Project Architecture</h2>
+            <p>While this project is a single-file CLI application, it is designed with a "MVC-lite" (Model-View-Controller) architecture in mind.</p>
+
+            <div class="card">
+                <h3>The MVC-Lite Pattern</h3>
+                <ul>
+                    <li><strong>Model (The Database):</strong> All data logic is handled by the MySQL tables. The database ensures data integrity through UNIQUE constraints and Foreign Keys.</li>
+                    <li><strong>View (The Terminal):</strong> The Console acts as our interface. Every <code>System.out.println()</code> call is part of our "View" layer, presenting information to the user.</li>
+                    <li><strong>Controller (The Java Methods):</strong> Methods like <code>castVote()</code> or <code>login()</code> act as Controllers. They take input from the View, process it using the Model, and update the View again.</li>
+                </ul>
+
+                <h3>Why the Single-File Approach?</h3>
+                <p>In a standard professional environment, we would use frameworks like Spring Boot to split these into 50+ files. However, for a <strong>learning project</strong>, the single-file approach is superior because:</p>
+                <ul>
+                    <li><strong>Tracing Logic:</strong> You can follow a user's journey from login to voting by simply scrolling down, without jumping between dozens of tabs.</li>
+                    <li><strong>Zero Dependencies:</strong> No complex annotations (<code>@Service</code>, <code>@Entity</code>) are needed. It's just pure, raw Java.</li>
+                    <li><strong>Portability:</strong> You can copy just one <code>.java</code> file and it contains 100% of the application logic.</li>
+                </ul>
             </div>
         </section>
 

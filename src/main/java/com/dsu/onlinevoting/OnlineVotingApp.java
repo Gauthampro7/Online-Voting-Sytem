@@ -42,6 +42,7 @@ public class OnlineVotingApp {
 
     // ─── ENTRY POINT ──────────────────────────────────────────────────────────
     public static void main(String[] args) {
+        // Print a stylized header when the app starts
         System.out.println("╔══════════════════════════════════════╗");
         System.out.println("║   ONLINE NATIONAL POLLING SYSTEM     ║");
         System.out.println("╚══════════════════════════════════════╝");
@@ -103,12 +104,15 @@ public class OnlineVotingApp {
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT id, name, role FROM users WHERE username = ? AND password_hash = ?")) {
 
+            // Set the username and hashed password into the SQL query placeholders
             ps.setString(1, username);
             ps.setString(2, sha256(password)); // Hash the password before comparing — never store/compare plain text
-            ResultSet rs = ps.executeQuery();   // Execute the SELECT and get the results
+            
+            // executeQuery() runs the SELECT and returns a ResultSet (the data table)
+            ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                // rs.next() returns true if at least one row was found — meaning credentials matched
+                // If rs.next() is true, it means we found a matching user record
                 int id      = rs.getInt("id");
                 String name = rs.getString("name");
                 String role = rs.getString("role");
@@ -152,14 +156,17 @@ public class OnlineVotingApp {
             return;
         }
 
-        // INSERT the new user into the database.
-        // The password is hashed with SHA-256 before saving — we NEVER store passwords in plain text.
+        // Create the INSERT query with placeholders (?) for data
         try (PreparedStatement ps = conn.prepareStatement(
                 "INSERT INTO users (username, password_hash, name, role) VALUES (?, ?, ?, ?)")) {
+            
+            // Bind the user-provided values to the query placeholders
             ps.setString(1, username);
             ps.setString(2, sha256(password)); // Always store the hash, not the real password
             ps.setString(3, name);
             ps.setString(4, role);
+            
+            // executeUpdate() is used for INSERT, UPDATE, or DELETE (queries that change data)
             ps.executeUpdate();
             System.out.println("Registered successfully! You can now log in.\n");
         } catch (SQLException e) {
@@ -190,14 +197,15 @@ public class OnlineVotingApp {
             System.out.print("> ");
             String choice = sc.nextLine().trim();
 
+            // Process the user's menu selection
             switch (choice) {
                 case "1" -> viewPendingVoters();                  // Shows all voters waiting for approval
                 case "2" -> approveReject("voter_profiles");      // Updates a voter's status
                 case "3" -> viewPendingCandidates();              // Shows all candidates waiting for approval
                 case "4" -> approveReject("candidate_profiles");  // Updates a candidate's status
                 case "5" -> viewResults();                        // Shows live vote counts
-                case "6" -> { System.out.println("Logged out.\n"); return; } // Exit the menu loop
-                default  -> System.out.println("Invalid choice.");
+                case "6" -> { System.out.println("Logged out.\n"); return; } // Exit the menu loop and return to the main screen
+                default  -> System.out.println("Invalid choice."); // Handles any other typed input
             }
         }
     }
@@ -240,6 +248,7 @@ public class OnlineVotingApp {
             System.out.print("> ");
             String choice = sc.nextLine().trim();
 
+            // Process the voter's menu selection
             switch (choice) {
                 case "1" -> applyVoterID(voterId);         // Submit a voter ID application
                 case "2" -> viewMyVoterStatus(voterId);    // Check if application was approved
@@ -247,7 +256,7 @@ public class OnlineVotingApp {
                 case "4" -> castVote(voterId);             // Cast a vote (once only)
                 case "5" -> postForum(voterId);            // Write a message on the forum
                 case "6" -> viewForum();                   // Read forum messages
-                case "7" -> { System.out.println("Logged out.\n"); return; }
+                case "7" -> { System.out.println("Logged out.\n"); return; } // Exit to the main screen
                 default  -> System.out.println("Invalid choice.");
             }
         }
@@ -299,12 +308,16 @@ public class OnlineVotingApp {
         System.out.print("Enter your Address: ");
         String address = sc.nextLine().trim();
 
-        // Save the new application. Status is hardcoded to 'PENDING' in the SQL.
+        // Prepare the INSERT statement for voter_profiles
         try (PreparedStatement ps = conn.prepareStatement(
                 "INSERT INTO voter_profiles (user_id, constituency, address, status) VALUES (?, ?, ?, 'PENDING')")) {
+            
+            // Map the current user's ID and details to the query
             ps.setInt(1, userId);
             ps.setString(2, constituency);
             ps.setString(3, address);
+            
+            // Execute the save operation
             ps.executeUpdate();
             System.out.println("Voter ID application submitted! Status: PENDING.\n");
         } catch (SQLException e) { System.out.println("[DB ERROR] " + e.getMessage()); }
@@ -345,13 +358,17 @@ public class OnlineVotingApp {
         System.out.print("Manifesto (brief): ");
         String manifesto = sc.nextLine().trim();
 
-        // Insert into candidate_profiles with status PENDING
+        // Prepare the INSERT statement for candidate_profiles
         try (PreparedStatement ps = conn.prepareStatement(
                 "INSERT INTO candidate_profiles (user_id, party, constituency, manifesto, status) VALUES (?, ?, ?, ?, 'PENDING')")) {
+            
+            // Map the current user's ID and candidate details to the query
             ps.setInt(1, userId);
             ps.setString(2, party);
             ps.setString(3, constituency);
             ps.setString(4, manifesto);
+            
+            // Save the application to the database
             ps.executeUpdate();
             System.out.println("Candidacy application submitted! Status: PENDING.\n");
         } catch (SQLException e) { System.out.println("[DB ERROR] " + e.getMessage()); }
@@ -427,10 +444,17 @@ public class OnlineVotingApp {
         String status = action.equals("APPROVE") ? "APPROVED" : action.equals("REJECT") ? "REJECTED" : null;
         if (status == null) { System.out.println("Invalid action.\n"); return; }
 
+        // Create the UPDATE query. We use string concatenation for the table name
+        // because table names cannot be passed as parameters in PreparedStatements.
         try (PreparedStatement ps = conn.prepareStatement(
                 "UPDATE " + table + " SET status = ? WHERE id = ?")) {
+            
+            // Set the new status string (APPROVED or REJECTED)
             ps.setString(1, status);
+            // Set the specific row ID to update
             ps.setInt(2, Integer.parseInt(idStr));
+            
+            // rows stores how many records were actually changed
             int rows = ps.executeUpdate();
             System.out.println(rows > 0 ? "Done! Status set to " + status + ".\n" : "ID not found.\n");
         } catch (SQLException | NumberFormatException e) {
@@ -525,10 +549,13 @@ public class OnlineVotingApp {
                 "LEFT JOIN votes v ON v.candidate_id = cp.user_id " +
                 "WHERE cp.status = 'APPROVED' " +
                 "GROUP BY cp.id ORDER BY votes DESC")) {
-            int rank = 1;
+            int rank = 1; // Used to show #1, #2, #3 for the winners
             boolean any = false;
+            
+            // Loop through each row in the results
             while (rs.next()) {
                 any = true;
+                // Print the formatted result line
                 System.out.printf("#%d  %-20s | %s | %s | Votes: %d%n",
                     rank++, rs.getString("name"), rs.getString("party"),
                     rs.getString("constituency"), rs.getInt("votes"));
@@ -562,6 +589,8 @@ public class OnlineVotingApp {
                 "FROM forum_posts fp JOIN users u ON u.id = fp.user_id " +
                 "ORDER BY fp.posted_at DESC LIMIT 20")) {
             boolean any = false;
+            
+            // Iterate over the result rows and print each post
             while (rs.next()) {
                 any = true;
                 System.out.printf("[%s] %s: %s%n",
