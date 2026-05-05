@@ -200,11 +200,16 @@
         <div class="sidebar-brand">Project Docs</div>
         <nav class="sidebar-nav">
             <a href="#intro">1. Introduction & Overview</a>
-            <a href="#architecture">2. System Architecture</a>
-            <a href="#database">3. Database & JDBC Connect</a>
-            <a href="#backend">4. Backend (Spring Boot)</a>
-            <a href="#frontend">5. Frontend (Thymeleaf)</a>
-            <a href="#security">6. Security & Roles</a>
+            <a href="#structure">2. Project File Structure</a>
+            <a href="#maven">3. Maven & Dependency Management</a>
+            <a href="#architecture">4. System Architecture</a>
+            <a href="#roles">5. User Roles & Workflows</a>
+            <a href="#database">6. Database & JDBC Connect</a>
+            <a href="#backend">7. Backend (Spring Boot)</a>
+            <a href="#frontend">8. Frontend (Thymeleaf)</a>
+            <a href="#security">9. Security & Authorization</a>
+            <a href="#future">10. Future Scope</a>
+            <a href="#conclusion">11. Conclusion</a>
         </nav>
     </aside>
 
@@ -220,6 +225,76 @@
             </p>
         </section>
 
+        <!-- File Structure Section -->
+        <section id="structure">
+            <h2>Project File Structure</h2>
+            <p>A well-organized project structure is the backbone of any Spring Boot application. We follow the <strong>Layered Architecture</strong> pattern to separate concerns and ensure maintainability.</p>
+            
+            <div class="glass-card">
+                <div class="step-grid">
+                    <div class="step-number" style="background: var(--accent-secondary);">📂</div>
+                    <div>
+                        <h4>src/main/java (The Source Code)</h4>
+                        <p>This directory contains the logic of the application, organized into meaningful packages:</p>
+                        <ul>
+                            <li><strong>com.dsu.onlinevoting.config:</strong> Contains <code>SecurityConfig.java</code>, where we define access rules and password encryption beans.</li>
+                            <li><strong>com.dsu.onlinevoting.controller:</strong> The "Traffic Police" of the app. These classes (like <code>VoterController.java</code>) handle incoming web requests and return HTML pages.</li>
+                            <li><strong>com.dsu.onlinevoting.model:</strong> Our <code>Entities</code>. These classes define the structure of our database tables using JPA annotations.</li>
+                            <li><strong>com.dsu.onlinevoting.repository:</strong> Interfaces that talk to the database. They extend <code>JpaRepository</code> to provide CRUD operations without writing SQL.</li>
+                            <li><strong>com.dsu.onlinevoting.service:</strong> The "Brain" of the app. This layer contains business logic, such as calculating results or verifying vote eligibility.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step-grid">
+                    <div class="step-number" style="background: var(--accent-warning);">📄</div>
+                    <div>
+                        <h4>src/main/resources (The Assets)</h4>
+                        <ul>
+                            <li><strong>templates/:</strong> Contains all Thymeleaf HTML files. These are transformed into dynamic web pages at runtime.</li>
+                            <li><strong>static/:</strong> Holds our custom <code>styles.css</code> and any images/icons used in the design.</li>
+                            <li><strong>application.properties:</strong> The central configuration file for database URLs, ports, and Hibernate settings.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Maven Section -->
+        <section id="maven">
+            <h2>Maven & Dependency Management</h2>
+            <p>Modern Java development relies on <strong>Maven</strong> to manage project lifecycles. Instead of manually downloading JAR files, we define our needs in the <code>pom.xml</code> (Project Object Model) file.</p>
+            
+            <div class="glass-card">
+                <h3>Why use Maven?</h3>
+                <p>Maven provides several critical benefits for a college project of this scale:</p>
+                <ol style="margin-left: 1.5rem; color: var(--text-muted); margin-bottom: 2rem;">
+                    <li><strong>Dependency Resolution:</strong> Automatically downloads all libraries (Spring, Hibernate, MySQL Driver) from the central repository.</li>
+                    <li><strong>Build Automation:</strong> Compiles, tests, and packages the code into a runnable <code>.jar</code> file with a single command.</li>
+                    <li><strong>Reproducibility:</strong> Ensures that if another developer (or your professor) runs the project, they get exactly the same environment.</li>
+                </ol>
+
+                <h3>Key Dependencies in pom.xml</h3>
+<pre><code class="language-xml">&lt;!-- Spring Boot Starter Web: Enables MVC and Embedded Tomcat --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+&lt;/dependency&gt;
+
+&lt;!-- Spring Data JPA: For Database interactions --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-data-jpa&lt;/artifactId&gt;
+&lt;/dependency&gt;
+
+&lt;!-- MySQL Connector: The JDBC Driver for MySQL --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.mysql&lt;/groupId&gt;
+    &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+            </div>
+        </section>
+
         <!-- Architecture Section -->
         <section id="architecture">
             <h2>System Architecture</h2>
@@ -229,25 +304,66 @@
                 <div class="diagram-node">
                     <div style="font-size: 2rem; margin-bottom: 1rem;">🌐</div>
                     <h4>1. Client View</h4>
-                    <p>Browser rendering HTML5 & CSS via Thymeleaf.</p>
+                    <p>Browser rendering HTML5 & CSS via Thymeleaf. Uses HTTP GET/POST to interact.</p>
                 </div>
                 <div style="font-size: 1.5rem; color: var(--accent-primary);">➔</div>
                 <div class="diagram-node">
                     <div style="font-size: 2rem; margin-bottom: 1rem;">⚙️</div>
                     <h4>2. Controllers</h4>
-                    <p>Spring MVC handling HTTP requests & routing.</p>
+                    <p>The entry point. Uses `@RequestMapping` to map URLs to specific Java methods.</p>
                 </div>
                 <div style="font-size: 1.5rem; color: var(--accent-primary);">➔</div>
                 <div class="diagram-node">
                     <div style="font-size: 2rem; margin-bottom: 1rem;">🧠</div>
                     <h4>3. Service Layer</h4>
-                    <p>Core business logic and `@Transactional` scopes.</p>
+                    <p>The heart of the app. Handles complex rules like "Can this user vote twice?".</p>
                 </div>
                 <div style="font-size: 1.5rem; color: var(--accent-primary);">➔</div>
                 <div class="diagram-node" style="border-color: var(--accent-secondary);">
                     <div style="font-size: 2rem; margin-bottom: 1rem;">🗄️</div>
                     <h4>4. MySQL / JDBC</h4>
-                    <p>Spring Data JPA abstracting native JDBC queries.</p>
+                    <p>Persistent storage. Spring Data JPA abstracting native JDBC queries via Hibernate.</p>
+                </div>
+            </div>
+
+            <h3>The Request Lifecycle</h3>
+            <p>When a user clicks "Vote", the request first hits the <strong>Embedded Tomcat Server</strong>. Spring Security intercepts it to check if the user is logged in. If allowed, the <strong>DispatcherServlet</strong> (the front controller) sends the request to the appropriate Controller. The Controller talks to the Service, which uses the Repository to save the vote in MySQL. Finally, a success message is passed back to the Thymeleaf template for rendering.</p>
+        </section>
+
+        <!-- Roles Section -->
+        <section id="roles">
+            <h2>User Roles & Workflows</h2>
+            <p>To simulate a real-world national polling environment, we implemented 4 distinct actors with unique permissions and responsibilities.</p>
+
+            <div class="step-grid">
+                <div class="step-number" style="background: var(--accent-primary);">1</div>
+                <div class="glass-card">
+                    <h4>Voter (General Public)</h4>
+                    <p>The primary user. They can register, apply for a digital Voter ID by submitting their address and constituency, and once approved by an officer, they can cast a single vote. They also have access to the discussion forums to engage with other citizens.</p>
+                </div>
+            </div>
+
+            <div class="step-grid">
+                <div class="step-number" style="background: var(--accent-secondary);">2</div>
+                <div class="glass-card">
+                    <h4>Candidate</h4>
+                    <p>Users who wish to run for office. They must submit a candidacy application including their political party and manifesto. Once an Admin approves their candidacy, their name appears on the ballot for voters in their constituency.</p>
+                </div>
+            </div>
+
+            <div class="step-grid">
+                <div class="step-number" style="background: var(--accent-warning);">3</div>
+                <div class="glass-card">
+                    <h4>Field Officer</h4>
+                    <p>The verification layer. Field officers are responsible for reviewing Voter ID applications. They check the provided documents and click "Approve" to grant the user voting rights, ensuring no duplicate or fake identities enter the system.</p>
+                </div>
+            </div>
+
+            <div class="step-grid">
+                <div class="step-number" style="background: #ec4899;">4</div>
+                <div class="glass-card">
+                    <h4>Administrator</h4>
+                    <p>The Election Commission. Admins have the highest authority. They approve candidate applications, monitor the live tally of votes, and oversee the overall health of the discussion forums. They are the only ones who can see the real-time winner of the election.</p>
                 </div>
             </div>
         </section>
@@ -265,8 +381,10 @@ spring.datasource.url=jdbc:mysql://localhost:3306/online_voting?useSSL=false&ser
 spring.datasource.username=root
 spring.datasource.password=
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect</code></pre>
-                <p><strong>Explanation:</strong> <code>ddl-auto=update</code> is a powerful feature that automatically analyzes our Java classes and generates the SQL `CREATE TABLE` commands in MySQL for us.</p>
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect</code></pre>
+                <p><strong>Explanation:</strong> <code>ddl-auto=update</code> is a powerful feature that automatically analyzes our Java classes and generates the SQL `CREATE TABLE` commands in MySQL for us. We use <strong>HikariCP</strong> (the default connection pool) to maintain a set of open connections to MySQL, which significantly improves performance by avoiding the overhead of creating a new connection for every single query.</p>
+                <p>The <code>MySQLDialect</code> ensures that Hibernate generates SQL syntax that is specific and optimized for the MySQL database engine, handling things like pagination and auto-incrementing IDs correctly.</p>
+            </div>
             </div>
 
             <div class="glass-card">
@@ -306,6 +424,7 @@ public class Vote {
     Optional&lt;Vote&gt; findByVoter(User voter);
     long countByCandidate(User candidate);
 }</code></pre>
+                    <p>We use <code>Optional&lt;T&gt;</code> to handle cases where a record might not exist (preventing the dreaded <code>NullPointerException</code>). This encourages safer coding practices throughout the backend.</p>
                 </div>
             </div>
 
@@ -353,7 +472,7 @@ public class VotingService {
     &lt;/div&gt;
 &lt;/div&gt;</code></pre>
                 <h3 class="mt-4">The "Glassmorphism" Aesthetic</h3>
-                <p>To ensure a premium feel, we utilized modern Vanilla CSS with backdrop filters to create a frosted glass effect over the dark space background.</p>
+                <p>To ensure a premium feel, we utilized modern Vanilla CSS with backdrop filters to create a frosted glass effect over the dark space background. This involves layering semi-transparent backgrounds with blur effects.</p>
 <pre><code class="language-css">.glass-panel {
     background: rgba(255, 255, 255, 0.05); /* Semi-transparent */
     backdrop-filter: blur(12px); /* Frosted glass effect */
@@ -361,12 +480,14 @@ public class VotingService {
     border-radius: 16px;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }</code></pre>
+                <p>By using <strong>Flexbox</strong> and <strong>CSS Grid</strong>, the layout remains responsive across different screen sizes, ensuring that the voting dashboard looks just as good on a mobile phone as it does on a desktop monitor.</p>
+            </div>
             </div>
         </section>
 
         <!-- Security Section -->
         <section id="security" style="margin-bottom: 4rem;">
-            <h2>Security & Role-Based Access</h2>
+            <h2>Security & Authorization</h2>
             <p>Elections require strict security. We implemented <strong>Spring Security</strong> to handle authentication, password hashing (BCrypt), and authorization.</p>
 
             <div class="glass-card">
@@ -391,6 +512,36 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
     return http.build();
 }</code></pre>
                 <p>This guarantees that a normal Voter cannot manually navigate to <code>/admin/results</code> or alter candidate approvals.</p>
+                <h3>Security Highlights</h3>
+                <ul>
+                    <li><strong>BCrypt Hashing:</strong> Passwords are never stored in plain text. BCrypt uses an adaptive hashing algorithm with a salt, making it extremely resistant to rainbow table attacks.</li>
+                    <li><strong>CSRF Protection:</strong> Spring Security automatically adds a hidden CSRF token to every form, preventing "Cross-Site Request Forgery" attacks.</li>
+                    <li><strong>Session Management:</strong> Secure session handling ensures that users are automatically logged out after inactivity.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Future Scope -->
+        <section id="future">
+            <h2>Future Scope & Enhancements</h2>
+            <p>While the current system is fully functional for a graduation project, it can be expanded into a production-ready national platform with the following enhancements:</p>
+            
+            <div class="glass-card">
+                <ul>
+                    <li><strong>Blockchain Integration:</strong> Implementing a private blockchain (like Hyperledger) to store votes as immutable blocks, making the election completely audit-proof and tamper-resistant.</li>
+                    <li><strong>Biometric Verification:</strong> Integrating Aadhaar or Fingerprint APIs to verify the voter's identity in real-time during the login process.</li>
+                    <li><strong>Live Notification System:</strong> Using WebSockets to push real-time voting trends and results to the dashboard without requiring a page refresh.</li>
+                    <li><strong>AI Manifesto Analysis:</strong> Using Natural Language Processing (NLP) to summarize candidate manifestos and highlight key promises for voters.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section id="conclusion" style="padding-bottom: 10rem;">
+            <h2>Project Conclusion</h2>
+            <p>The <strong>Online National Polling System</strong> successfully demonstrates the power of the Spring Boot ecosystem combined with modern CSS design. By leveraging JPA for database abstraction, Spring Security for robust protection, and Thymeleaf for dynamic rendering, we have built a professional-grade application that is both functional and visually stunning.</p>
+            <div class="glass-card" style="text-align: center;">
+                <p style="color: #fff; font-size: 1.2rem; margin-bottom: 0;">🚀 Project Ready for Deployment & Demonstration</p>
             </div>
         </section>
 

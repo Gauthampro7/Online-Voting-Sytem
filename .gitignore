@@ -4,6 +4,9 @@
 # Log files
 *.log
 
+# Build output
+target/
+
 # BlueJ files
 *.ctxt
 
