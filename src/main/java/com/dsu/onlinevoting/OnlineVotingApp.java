@@ -12,9 +12,12 @@ import java.util.Scanner;
 public class OnlineVotingApp {
 
     // ─── DATABASE CONFIG ──────────────────────────────────────────────────────
-    private static final String DB_URL  = "jdbc:mysql://localhost:3306/?useSSL=false&serverTimezone=UTC";
-    private static final String DB_USER = "root";
-    private static final String DB_PASS = "";  // Change if your root has a password
+    private static final String DB_USER    = "root";
+    private static final String DB_PASS    = "";  // Change if your root has a password
+    // Bootstrap URL (no DB specified — used only to CREATE the database on first run)
+    private static final String DB_URL_BOOT = "jdbc:mysql://localhost:3306/?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+    // Normal URL (with DB selected)
+    private static final String DB_URL      = "jdbc:mysql://localhost:3306/online_voting?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
 
     private static Connection conn;
     private static final Scanner sc = new Scanner(System.in);
@@ -26,6 +29,12 @@ public class OnlineVotingApp {
         System.out.println("╚══════════════════════════════════════╝");
 
         try {
+            // Step 1: Connect without a DB to create it if it doesn't exist
+            try (Connection bootstrap = DriverManager.getConnection(DB_URL_BOOT, DB_USER, DB_PASS);
+                 Statement st = bootstrap.createStatement()) {
+                st.executeUpdate("CREATE DATABASE IF NOT EXISTS online_voting");
+            }
+            // Step 2: Reconnect with the database selected in the URL
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
             setupDatabase();
             System.out.println("[OK] Connected to MySQL.\n");
@@ -489,14 +498,9 @@ public class OnlineVotingApp {
     // ─── DATABASE SETUP (runs on first launch) ────────────────────────────────
 
     private static void setupDatabase() throws SQLException {
+        // By this point conn is already connected to online_voting (via DB_URL)
+        // Just create tables and seed default admin if needed
         try (Statement st = conn.createStatement()) {
-            // Create the database if it doesn't exist
-            st.executeUpdate("CREATE DATABASE IF NOT EXISTS online_voting");
-            st.executeUpdate("USE online_voting");
-
-            // Update connection to use the database
-            conn.setCatalog("online_voting");
-
             st.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS users (
                     id            INT AUTO_INCREMENT PRIMARY KEY,
@@ -546,7 +550,7 @@ public class OnlineVotingApp {
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 )""");
 
-            // Create a default admin account (password: admin123) if none exists
+            // Seed a default admin account (password: admin123)
             st.executeUpdate("""
                 INSERT IGNORE INTO users (username, password_hash, name, role)
                 VALUES ('admin', '%s', 'System Administrator', 'ADMIN')
