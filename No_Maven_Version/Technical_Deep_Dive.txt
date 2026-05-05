@@ -1,0 +1,130 @@
+================================================================================
+TECHNICAL DEEP DIVE: ARCHITECTURE & CONNECTIVITY
+================================================================================
+
+This document is a technical deep dive into the "Online Voting System". It 
+explains exactly how the database was built, how Java talks to MySQL, and the 
+purpose of every file we created. 
+
+This is the perfect guide if you need to explain the technical details to an 
+examiner or professor.
+
+--------------------------------------------------------------------------------
+1. ALL FILES CREATED AND THEIR PURPOSE
+--------------------------------------------------------------------------------
+
+[ THE SOURCE CODE ]
+* src/com/dsu/onlinevoting/OnlineVotingApp.java
+  This is the brain of the project. It is a single-file application. It contains 
+  the main() method, all the user menus, the database connection logic, and the 
+  SHA-256 security algorithms.
+
+[ THE LIBRARIES ]
+* lib/mysql-connector-j.jar
+  This is the JDBC Driver. It was written by Oracle/MySQL. Java itself does not 
+  know how to talk to MySQL. This file acts as the translator between Java's 
+  standard database commands and MySQL's proprietary network protocol.
+
+[ THE DATABASE SERVER ]
+* mariadb/
+  This folder contains a fully portable version of the MariaDB (MySQL) database 
+  server. Instead of making you install MySQL on your computer, this folder 
+  contains the actual engine (mysqld.exe) and the physical data storage.
+
+[ THE LAUNCH SCRIPTS ]
+* start_db.bat: A batch script that runs mysqld.exe to turn on the database.
+* compile.bat: A batch script that uses the 'javac' command to compile the 
+  OnlineVotingApp.java file into executable Bytecode (.class files).
+* run.bat: A batch script that uses the 'java' command to execute the compiled 
+  bytecode and start the actual voting terminal.
+
+--------------------------------------------------------------------------------
+2. HOW DATABASE CONNECTIVITY IS MADE (JDBC)
+--------------------------------------------------------------------------------
+Connectivity is achieved using the Java Database Connectivity (JDBC) API. 
+Here is exactly how it works under the hood:
+
+A. The Imports
+We import 'java.sql.*' at the top of the file. This gives us access to classes 
+like Connection, PreparedStatement, and ResultSet.
+
+B. The Connection URL
+To connect to the database, JDBC needs an address. We provide this URL:
+`jdbc:mysql://localhost:3306/online_voting`
+- jdbc: The protocol we are using.
+- mysql: The specific database dialect.
+- localhost:3306: The IP address and Port where MariaDB is running.
+- online_voting: The name of our specific database.
+
+C. Establishing the Connection
+In our code, we call:
+`conn = DriverManager.getConnection(DB_URL, "root", "");`
+The DriverManager looks at our URL, realizes it's a "mysql" connection, searches 
+the 'lib' folder for the mysql-connector-j.jar, and uses it to open a secure 
+TCP/IP pipeline to the database.
+
+--------------------------------------------------------------------------------
+3. HOW WE CREATED THE DATABASE (The Bootstrap Technique)
+--------------------------------------------------------------------------------
+Usually, you have to manually open MySQL, type "CREATE DATABASE...", and then 
+run your Java code. We wanted our project to be smarter than that. We made it 
+"self-healing"—it creates its own database automatically.
+
+Here is the technical trick we used in the main() method:
+
+STEP 1: The Bootstrap Connection
+You cannot connect to a database that doesn't exist. If we tried to connect to 
+'online_voting' on the first run, the program would crash. 
+So, our first connection URL is: `jdbc:mysql://localhost:3306/` (Notice there is 
+no database name at the end).
+We connect to the server globally, and run: 
+`CREATE DATABASE IF NOT EXISTS online_voting`
+
+STEP 2: The Actual Connection
+Once we know the database exists, we close the global connection and reconnect 
+using the proper URL: `jdbc:mysql://localhost:3306/online_voting`.
+
+STEP 3: Table Generation
+Next, we call a method named setupDatabase(). Inside, we run SQL commands like:
+`CREATE TABLE IF NOT EXISTS users (...)`
+`CREATE TABLE IF NOT EXISTS votes (...)`
+The "IF NOT EXISTS" clause is critical. It means we can safely run this code 
+every time the app starts without wiping out existing user data.
+
+--------------------------------------------------------------------------------
+4. HOW SECURITY IS IMPLEMENTED (SHA-256 HASHING)
+--------------------------------------------------------------------------------
+If an attacker steals a database, they usually steal the passwords. We prevent 
+this by never storing plain-text passwords.
+
+When a user registers:
+1. They type "password123".
+2. We pass "password123" into our sha256() method.
+3. The method uses Java's built-in `MessageDigest.getInstance("SHA-256")`.
+4. It mathematically scrambles the password into a 64-character hexadecimal 
+   string (e.g., "ef92b778bafe771e...").
+5. We save THAT string into the database.
+
+When a user logs in:
+1. They type "password123".
+2. We hash it again.
+3. We ask the database: "Do you have a user whose hash matches this new hash?"
+4. If yes, they are logged in.
+
+Because SHA-256 is a "one-way" mathematical function, it is impossible to 
+reverse the hash back into "password123". This makes the system highly secure.
+
+--------------------------------------------------------------------------------
+5. THE EXECUTION FLOW (How the code moves)
+--------------------------------------------------------------------------------
+If you need to explain how the code runs from start to finish:
+
+1. PROGRAM START: main() is called. It connects to MySQL and creates tables.
+2. MAIN MENU: A while(true) loop asks the user to Login or Register.
+3. ROUTING: If Login is successful, the code checks the user's 'role' (VOTER, 
+   ADMIN, etc.) and routes them to a specific method like voterMenu() or adminMenu().
+4. ROLE MENU: Another while(true) loop traps the user in their specific menu 
+   so a Voter can never accidentally access Admin controls.
+5. ACTION: The user picks an option (e.g., "Cast Vote"). The program calls 
+   castVote(), executes a PreparedStatement to update the database, and returns 
+   to the Role Menu.
