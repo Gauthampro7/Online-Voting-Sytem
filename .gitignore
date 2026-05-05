@@ -4,8 +4,12 @@
 # Log files
 *.log
 
-# Build output
+# Build output and caches
 out/
+build/
+target/
+.cache/
+.java/
 
 # BlueJ files
 *.ctxt
