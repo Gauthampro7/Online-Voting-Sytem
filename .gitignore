@@ -63,3 +63,9 @@ seed_data.sql
 *.bak
 *.swp
 *~
+
+# No Maven Version output
+No_Maven_Version/out/
+
+# Unignore the specific JAR for the standalone version
+!No_Maven_Version/lib/mysql-connector-j.jar
