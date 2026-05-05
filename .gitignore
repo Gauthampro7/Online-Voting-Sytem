@@ -54,7 +54,7 @@ buildNumber.properties
 .vscode/
 
 # Local Database Folder (MariaDB portable)
-mariadb/
+# Removed from ignore for college project portability
 
 # Database seed scripts (optional, but keeping the workspace clean)
 seed_data.sql
